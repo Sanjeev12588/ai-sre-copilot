@@ -1,0 +1,16 @@
+.git
+.venv
+node_modules
+dist
+build
+.env
+.env.*
+*.db
+.adk
+.pytest_cache
+.ruff_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
