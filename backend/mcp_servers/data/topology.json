@@ -1,0 +1,192 @@
+{
+  "metadata": {
+    "version": "2.1.0",
+    "environment": "production",
+    "region": "us-east-1",
+    "last_updated": "2026-06-27T10:00:00Z"
+  },
+  "services": [
+    {
+      "id": "api-gateway",
+      "name": "API Gateway",
+      "description": "External-facing reverse proxy and rate limiter",
+      "team": "platform",
+      "criticality": "CRITICAL",
+      "slo_target_pct": 99.95,
+      "status": "DEGRADED",
+      "replicas": { "desired": 3, "ready": 3 },
+      "endpoints": ["https://api.acme.internal"],
+      "port": 443
+    },
+    {
+      "id": "checkout-service",
+      "name": "Checkout Service",
+      "description": "Handles shopping cart, order placement, and payment initiation",
+      "team": "checkout",
+      "criticality": "CRITICAL",
+      "slo_target_pct": 99.9,
+      "status": "DOWN",
+      "replicas": { "desired": 5, "ready": 5 },
+      "endpoints": ["http://checkout-service.internal:8080"],
+      "port": 8080
+    },
+    {
+      "id": "billing-service",
+      "name": "Billing Service",
+      "description": "Processes payment authorization and invoice generation",
+      "team": "payments",
+      "criticality": "CRITICAL",
+      "slo_target_pct": 99.9,
+      "status": "DEGRADED",
+      "replicas": { "desired": 3, "ready": 3 },
+      "endpoints": ["http://billing-service.internal:8081"],
+      "port": 8081
+    },
+    {
+      "id": "payments-db-v2",
+      "name": "Payments Database (v2)",
+      "description": "PostgreSQL 15 primary instance for transactional payment data",
+      "team": "data-platform",
+      "criticality": "CRITICAL",
+      "slo_target_pct": 99.99,
+      "status": "CRITICAL",
+      "replicas": { "desired": 1, "ready": 1 },
+      "endpoints": ["postgres://payments-db-v2.internal:5432"],
+      "port": 5432,
+      "metadata": {
+        "db_type": "postgresql",
+        "version": "15.4",
+        "max_connections": 100,
+        "current_connections": 100
+      }
+    },
+    {
+      "id": "auth-service",
+      "name": "Authentication Service",
+      "description": "OAuth2/JWT token issuance and validation",
+      "team": "identity",
+      "criticality": "HIGH",
+      "slo_target_pct": 99.95,
+      "status": "HEALTHY",
+      "replicas": { "desired": 3, "ready": 3 },
+      "endpoints": ["http://auth-service.internal:8082"],
+      "port": 8082
+    },
+    {
+      "id": "cache-service",
+      "name": "Cache Service (Redis)",
+      "description": "Distributed session cache and product catalog cache",
+      "team": "platform",
+      "criticality": "HIGH",
+      "slo_target_pct": 99.9,
+      "status": "HEALTHY",
+      "replicas": { "desired": 3, "ready": 3 },
+      "endpoints": ["redis://cache-service.internal:6379"],
+      "port": 6379
+    },
+    {
+      "id": "notification-service",
+      "name": "Notification Service",
+      "description": "Email, SMS, and push notification dispatcher",
+      "team": "platform",
+      "criticality": "MEDIUM",
+      "slo_target_pct": 99.5,
+      "status": "HEALTHY",
+      "replicas": { "desired": 2, "ready": 2 },
+      "endpoints": ["http://notification-service.internal:8083"],
+      "port": 8083
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "api-gateway",
+      "to": "checkout-service",
+      "type": "SYNCHRONOUS",
+      "protocol": "HTTP/2",
+      "criticality": "HIGH",
+      "timeout_ms": 5000
+    },
+    {
+      "from": "api-gateway",
+      "to": "auth-service",
+      "type": "SYNCHRONOUS",
+      "protocol": "HTTP/2",
+      "criticality": "HIGH",
+      "timeout_ms": 2000
+    },
+    {
+      "from": "api-gateway",
+      "to": "notification-service",
+      "type": "ASYNC",
+      "protocol": "AMQP",
+      "criticality": "LOW",
+      "timeout_ms": null
+    },
+    {
+      "from": "checkout-service",
+      "to": "billing-service",
+      "type": "SYNCHRONOUS",
+      "protocol": "gRPC",
+      "criticality": "HIGH",
+      "timeout_ms": 10000
+    },
+    {
+      "from": "checkout-service",
+      "to": "payments-db-v2",
+      "type": "SYNCHRONOUS",
+      "protocol": "PostgreSQL",
+      "criticality": "CRITICAL",
+      "timeout_ms": 3000
+    },
+    {
+      "from": "checkout-service",
+      "to": "cache-service",
+      "type": "SYNCHRONOUS",
+      "protocol": "Redis",
+      "criticality": "MEDIUM",
+      "timeout_ms": 500
+    },
+    {
+      "from": "billing-service",
+      "to": "payments-db-v2",
+      "type": "SYNCHRONOUS",
+      "protocol": "PostgreSQL",
+      "criticality": "CRITICAL",
+      "timeout_ms": 5000
+    },
+    {
+      "from": "auth-service",
+      "to": "cache-service",
+      "type": "SYNCHRONOUS",
+      "protocol": "Redis",
+      "criticality": "MEDIUM",
+      "timeout_ms": 200
+    }
+  ],
+  "what_if_impact": {
+    "payments-db-v2": {
+      "restart_risk": "CRITICAL",
+      "affected_services_direct": ["checkout-service", "billing-service"],
+      "affected_services_cascade": ["api-gateway"],
+      "estimated_user_impact_pct": 85,
+      "estimated_downtime_seconds": 45,
+      "notes": "Primary DB restart will block all active transactions. Replica failover takes ~45s."
+    },
+    "checkout-service": {
+      "restart_risk": "HIGH",
+      "affected_services_direct": ["api-gateway"],
+      "affected_services_cascade": [],
+      "estimated_user_impact_pct": 60,
+      "estimated_downtime_seconds": 20,
+      "notes": "Rolling restart. 1-2 pods down at a time. API Gateway will 503 during pod restart."
+    },
+    "cache-service": {
+      "restart_risk": "MEDIUM",
+      "affected_services_direct": ["checkout-service", "auth-service"],
+      "affected_services_cascade": ["api-gateway"],
+      "estimated_user_impact_pct": 30,
+      "estimated_downtime_seconds": 10,
+      "notes": "Cache miss storm on restart. Services fall back to DB. Increased DB load for ~60s."
+    }
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "RB-DB-004": {
+    "id": "RB-DB-004",
+    "title": "Graceful Database Connection Pool Reset",
+    "category": "database",
+    "version": "2.3",
+    "applies_to": ["checkout-service", "billing-service"],
+    "target_database": "payments-db-v2",
+    "severity_threshold": "P1",
+    "risk_level": "MEDIUM",
+    "estimated_duration_seconds": 180,
+    "requires_human_approval": true,
+    "approval_required_from": "db-oncall",
+    "description": "Safely recycle stale/leaked database connections in the HikariCP connection pool without full service restart. Closes idle-in-transaction connections and flushes leaked PreparedStatements.",
+    "pre_flight_checks": [
+      "Verify replica database (payments-db-v2-replica) is healthy and in sync",
+      "Confirm current active connection count via pg_stat_activity",
+      "Validate billing-service can handle 10-second interruption",
+      "Ensure no in-flight financial transactions older than 60 seconds"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "Query pg_stat_activity to identify stale idle-in-transaction connections",
+        "command": "SELECT pid, usename, application_name, state, query_start, now()-query_start AS duration FROM pg_stat_activity WHERE state = 'idle in transaction' ORDER BY duration DESC;",
+        "expected_outcome": "List of PIDs with idle-in-transaction connections and their duration",
+        "simulated_result": "Found 97 idle-in-transaction connections. Oldest: 342s (PID 12847, checkout-service BillingProcessor)"
+      },
+      {
+        "step": 2,
+        "action": "Terminate idle-in-transaction connections older than 30 seconds",
+        "command": "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle in transaction' AND now() - query_start > interval '30 seconds';",
+        "expected_outcome": "Stale connections terminated, pool slots freed",
+        "simulated_result": "Terminated 94 stale connections. 6 connections retained (age < 30s). Pool usage: 6/100."
+      },
+      {
+        "step": 3,
+        "action": "Trigger HikariCP soft eviction on checkout-service via JMX endpoint",
+        "command": "curl -X POST http://checkout-service.internal:9090/actuator/hikaricp/reset",
+        "expected_outcome": "HikariCP pool evicts idle connections and re-establishes fresh pool",
+        "simulated_result": "HikariCP pool reset acknowledged. Pool recycling in progress. Active connections: 8/100."
+      },
+      {
+        "step": 4,
+        "action": "Monitor checkout-service health endpoint for 60 seconds",
+        "command": "watch -n 5 curl -s http://checkout-service.internal:8080/actuator/health",
+        "expected_outcome": "Health check returns UP with DB status healthy",
+        "simulated_result": "Health check: UP. DB status: HEALTHY. Pool usage: 12/100 after 60s."
+      },
+      {
+        "step": 5,
+        "action": "Validate end-to-end checkout flow with synthetic transaction",
+        "command": "curl -X POST http://api-gateway.internal/checkout/test-order -H 'X-Synthetic: true'",
+        "expected_outcome": "Synthetic order completes successfully (HTTP 200)",
+        "simulated_result": "Synthetic order INC-TEST-892 completed. HTTP 200 OK. Latency: 145ms."
+      }
+    ],
+    "rollback": {
+      "description": "If pool reset fails, initiate full checkout-service rolling restart",
+      "runbook_id": "RB-SVC-001"
+    },
+    "post_execution": {
+      "monitoring_duration_minutes": 15,
+      "success_criteria": [
+        "Connection pool usage < 60% for 10 consecutive minutes",
+        "Error rate < 0.1 req/s",
+        "Latency p99 < 500ms"
+      ]
+    }
+  },
+  "RB-DB-001": {
+    "id": "RB-DB-001",
+    "title": "Emergency Database Connection Kill — Immediate",
+    "category": "database",
+    "version": "1.8",
+    "applies_to": ["payments-db-v2"],
+    "severity_threshold": "P0",
+    "risk_level": "HIGH",
+    "estimated_duration_seconds": 60,
+    "requires_human_approval": true,
+    "approval_required_from": "db-oncall",
+    "description": "Force-terminate ALL non-superuser connections to the database. Use only when graceful reset (RB-DB-004) is not possible or already failed.",
+    "pre_flight_checks": [
+      "Confirm RB-DB-004 has been attempted and failed",
+      "Verify replica is healthy for emergency failover if needed",
+      "Alert db-oncall team before execution"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "Force-terminate all non-superuser connections",
+        "command": "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND usename NOT IN ('postgres', 'replicator');",
+        "expected_outcome": "All application connections killed immediately",
+        "simulated_result": "Terminated 100 connections. Pool cleared. Applications will reconnect with backoff."
+      },
+      {
+        "step": 2,
+        "action": "Monitor connection restoration via pg_stat_activity",
+        "command": "SELECT count(*), state FROM pg_stat_activity GROUP BY state;",
+        "expected_outcome": "Fresh connections establishing within 30s",
+        "simulated_result": "Connections restored: 18 active, 0 idle-in-transaction after 30s."
+      }
+    ],
+    "rollback": {
+      "description": "Initiate emergency failover to replica if primary remains unstable",
+      "runbook_id": "RB-DB-002"
+    }
+  },
+  "RB-DB-002": {
+    "id": "RB-DB-002",
+    "title": "Database Failover to Read Replica",
+    "category": "database",
+    "version": "3.1",
+    "applies_to": ["payments-db-v2"],
+    "severity_threshold": "P0",
+    "risk_level": "CRITICAL",
+    "estimated_duration_seconds": 300,
+    "requires_human_approval": true,
+    "approval_required_from": ["db-oncall", "engineering-vp"],
+    "description": "Promote payments-db-v2-replica to primary. Last resort when primary is unrecoverable.",
+    "pre_flight_checks": [
+      "Verify replica replication lag < 5 seconds",
+      "Confirm no in-flight write transactions on primary",
+      "Alert all engineering leads"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "Check replication lag",
+        "command": "SELECT now() - pg_last_xact_replay_timestamp() AS replication_lag;",
+        "expected_outcome": "Lag < 5 seconds",
+        "simulated_result": "Replication lag: 2.3 seconds. Safe to proceed."
+      },
+      {
+        "step": 2,
+        "action": "Promote replica to primary",
+        "command": "pg_ctl promote -D /var/lib/postgresql/data",
+        "expected_outcome": "Replica becomes writable primary",
+        "simulated_result": "Replica promoted. New primary: payments-db-v2-replica (now primary)."
+      }
+    ]
+  },
+  "RB-CACHE-001": {
+    "id": "RB-CACHE-001",
+    "title": "Flush Redis Cache — Selective",
+    "category": "cache",
+    "version": "2.0",
+    "applies_to": ["cache-service", "checkout-service", "auth-service"],
+    "severity_threshold": "P2",
+    "risk_level": "LOW",
+    "estimated_duration_seconds": 30,
+    "requires_human_approval": false,
+    "description": "Flush specific Redis keyspaces to resolve cache poisoning or stale data issues.",
+    "pre_flight_checks": [
+      "Identify affected cache keyspace pattern",
+      "Confirm DB can handle cache miss load spike"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "Flush targeted keyspace",
+        "command": "redis-cli -h cache-service.internal SCAN 0 MATCH 'checkout:session:*' COUNT 1000 | xargs redis-cli DEL",
+        "expected_outcome": "Stale keys removed. Next requests will repopulate from DB.",
+        "simulated_result": "Flushed 4,821 keys matching 'checkout:session:*'. Cache repopulating."
+      }
+    ]
+  },
+  "RB-SVC-001": {
+    "id": "RB-SVC-001",
+    "title": "Rolling Service Restart",
+    "category": "service",
+    "version": "4.2",
+    "applies_to": ["checkout-service", "billing-service", "auth-service"],
+    "severity_threshold": "P2",
+    "risk_level": "MEDIUM",
+    "estimated_duration_seconds": 240,
+    "requires_human_approval": true,
+    "approval_required_from": "platform-oncall",
+    "description": "Perform a rolling restart of the specified service deployment. Restarts pods one-at-a-time to maintain availability.",
+    "pre_flight_checks": [
+      "Verify Kubernetes deployment is healthy before restart",
+      "Confirm minimum replica count >= 2 for zero-downtime",
+      "Check PodDisruptionBudget allows restart"
+    ],
+    "steps": [
+      {
+        "step": 1,
+        "action": "Initiate rolling restart via kubectl",
+        "command": "kubectl rollout restart deployment/{service_name} -n {namespace}",
+        "expected_outcome": "Kubernetes begins rolling pod replacement",
+        "simulated_result": "Rolling restart initiated. Replacing pods: 1/5 complete."
+      },
+      {
+        "step": 2,
+        "action": "Monitor rollout status",
+        "command": "kubectl rollout status deployment/{service_name} -n {namespace} --timeout=300s",
+        "expected_outcome": "All pods restarted successfully within 5 minutes",
+        "simulated_result": "Rollout complete. 5/5 pods running with fresh connections. Pool usage: 8/100."
+      }
+    ]
+  }
+}

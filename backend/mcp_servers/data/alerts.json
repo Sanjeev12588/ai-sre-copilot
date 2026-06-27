@@ -1,0 +1,103 @@
+[
+  {
+    "alert_id": "ALERT-2026-001",
+    "name": "DatabaseConnectionPoolExhausted",
+    "service": "checkout-service",
+    "severity": "CRITICAL",
+    "status": "FIRING",
+    "started_at": "2026-06-27T11:15:00Z",
+    "duration_seconds": 1245,
+    "labels": {
+      "team": "checkout",
+      "env": "production",
+      "region": "us-east-1",
+      "cluster": "prod-cluster-01",
+      "namespace": "checkout"
+    },
+    "annotations": {
+      "summary": "Database connection pool is 100% utilized on checkout-service",
+      "description": "Active DB connections: 100/100. New connection requests are being rejected. checkout-service is returning HTTP 503 to all requests requiring DB access.",
+      "runbook_url": "runbook://RB-DB-004",
+      "dashboard_url": "https://grafana.acme.internal/d/checkout-db",
+      "severity_threshold": "95 connections for 5+ minutes"
+    }
+  },
+  {
+    "alert_id": "ALERT-2026-002",
+    "name": "ElevatedDatabaseQueryLatency",
+    "service": "payments-db-v2",
+    "severity": "CRITICAL",
+    "status": "FIRING",
+    "started_at": "2026-06-27T11:12:00Z",
+    "duration_seconds": 1425,
+    "labels": {
+      "team": "data-platform",
+      "env": "production",
+      "region": "us-east-1",
+      "db_instance": "payments-db-v2-primary"
+    },
+    "annotations": {
+      "summary": "p99 query latency on payments-db-v2 exceeds 5s SLO",
+      "description": "Query latency p99 is 8420ms (SLO: 500ms). Max connection count reached. Queries are queuing.",
+      "runbook_url": "runbook://RB-DB-001",
+      "dashboard_url": "https://grafana.acme.internal/d/payments-db"
+    }
+  },
+  {
+    "alert_id": "ALERT-2026-003",
+    "name": "CheckoutService5xxErrorRateHigh",
+    "service": "api-gateway",
+    "severity": "WARNING",
+    "status": "FIRING",
+    "started_at": "2026-06-27T11:16:00Z",
+    "duration_seconds": 1185,
+    "labels": {
+      "team": "platform",
+      "env": "production",
+      "region": "us-east-1",
+      "upstream": "checkout-service"
+    },
+    "annotations": {
+      "summary": "API Gateway reporting >5% 5xx error rate on /checkout/* routes",
+      "description": "503 error rate is 78% on checkout/* routes. Root cause: checkout-service DB pool exhausted.",
+      "runbook_url": "runbook://RB-SVC-001"
+    }
+  },
+  {
+    "alert_id": "ALERT-2026-004",
+    "name": "BillingServiceDegradedConnectivity",
+    "service": "billing-service",
+    "severity": "WARNING",
+    "status": "PENDING",
+    "started_at": "2026-06-27T11:18:00Z",
+    "duration_seconds": 1065,
+    "labels": {
+      "team": "payments",
+      "env": "production",
+      "region": "us-east-1"
+    },
+    "annotations": {
+      "summary": "billing-service experiencing intermittent DB connection failures",
+      "description": "billing-service DB connection success rate dropped to 40%. Cascading from payments-db-v2 saturation.",
+      "runbook_url": "runbook://RB-DB-004"
+    }
+  },
+  {
+    "alert_id": "ALERT-2026-005",
+    "name": "NotificationServiceQueueBacklog",
+    "service": "notification-service",
+    "severity": "INFO",
+    "status": "RESOLVED",
+    "started_at": "2026-06-27T09:30:00Z",
+    "resolved_at": "2026-06-27T09:55:00Z",
+    "duration_seconds": 1500,
+    "labels": {
+      "team": "platform",
+      "env": "production"
+    },
+    "annotations": {
+      "summary": "Notification queue backlog exceeded 10,000 messages",
+      "description": "Queue backlog cleared automatically. Cause: batch email job spike."
+    }
+  }
+]

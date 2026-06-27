@@ -1,0 +1,301 @@
+{
+  "checkout-service": {
+    "db_connection_pool_usage": {
+      "unit": "connections",
+      "max_value": 100,
+      "description": "Number of active database connections out of max pool size",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 35},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 37},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 40},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 44},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 49},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 55},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 62},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 70},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 78},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 85},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 91},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 96},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 99},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 100}
+      ]
+    },
+    "error_rate": {
+      "unit": "req/s",
+      "description": "HTTP 5xx error rate in requests per second",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 0.02},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 0.03},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 0.02},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 0.04},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 0.05},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 0.08},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 0.12},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 0.28},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 0.45},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 0.82},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 1.95},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 4.20},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 6.80},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 8.95},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 9.42},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 9.78}
+      ]
+    },
+    "latency_p99": {
+      "unit": "ms",
+      "description": "99th percentile request latency in milliseconds",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 142},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 148},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 155},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 162},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 175},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 210},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 380},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 620},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 1250},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 2100},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 3800},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 5100},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 5890},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 8420},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 9100},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 30000}
+      ]
+    },
+    "request_rate": {
+      "unit": "req/s",
+      "description": "Total incoming requests per second",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 245},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 251},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 248},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 255},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 260},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 258},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 240},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 215},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 185},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 142},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 88},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 42},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 18},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 7},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 3},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 1}
+      ]
+    }
+  },
+  "payments-db-v2": {
+    "db_connection_pool_usage": {
+      "unit": "connections",
+      "max_value": 100,
+      "description": "Active PostgreSQL connections to payments-db-v2",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 42},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 45},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 48},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 52},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 58},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 65},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 74},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 82},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 89},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 95},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 98},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 100}
+      ]
+    },
+    "query_latency_p99": {
+      "unit": "ms",
+      "description": "99th percentile database query execution latency",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 12},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 14},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 13},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 18},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 25},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 42},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 95},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 280},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 820},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 2100},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 4800},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 8000},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 8200},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 8350},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 8400},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 8420}
+      ]
+    },
+    "active_transactions": {
+      "unit": "count",
+      "description": "Number of open/uncommitted transactions",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 8},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 9},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 10},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 12},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 18},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 28},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 45},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 62},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 78},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 89},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 96},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 100},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 100}
+      ]
+    }
+  },
+  "billing-service": {
+    "db_connection_pool_usage": {
+      "unit": "connections",
+      "max_value": 50,
+      "description": "Active DB connections from billing-service to payments-db-v2",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 12},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 13},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 14},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 16},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 20},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 28},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 36},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 44},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 49},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 50},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 50},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 50},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 50},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 50},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 50},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 50}
+      ]
+    },
+    "request_rate": {
+      "unit": "req/s",
+      "description": "Incoming gRPC requests per second from checkout-service",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 85},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 87},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 84},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 88},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 82},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 75},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 60},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 42},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 22},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 8},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 3},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 1},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 0},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 0},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 0},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 0}
+      ]
+    }
+  },
+  "api-gateway": {
+    "request_rate": {
+      "unit": "req/s",
+      "description": "Total requests per second handled by the API gateway",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 1250},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 1280},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 1260},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 1290},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 1310},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 1300},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 1280},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 1250},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 1220},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 1195},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 1180},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 1160},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 1140},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 1120},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 1100},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 1085}
+      ]
+    },
+    "error_rate": {
+      "unit": "req/s",
+      "description": "5xx error rate on checkout/* routes via api-gateway",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 0.5},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 0.6},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 0.5},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 0.8},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 1.2},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 2.5},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 5.8},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 12.4},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 28.5},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 45.2},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 68.8},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 82.5},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 90.1},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 94.5},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 96.2},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 97.8}
+      ]
+    }
+  },
+  "auth-service": {
+    "request_rate": {
+      "unit": "req/s",
+      "description": "Token validation requests per second",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 420},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 425},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 418},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 430},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 435},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 428},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 432},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 422},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 425},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 418},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 422},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 419},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 421},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 416},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 418},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 420}
+      ]
+    },
+    "latency_p99": {
+      "unit": "ms",
+      "description": "99th percentile auth token validation latency",
+      "data_points": [
+        {"timestamp": "2026-06-27T10:00:00Z", "value": 18},
+        {"timestamp": "2026-06-27T10:05:00Z", "value": 17},
+        {"timestamp": "2026-06-27T10:10:00Z", "value": 19},
+        {"timestamp": "2026-06-27T10:15:00Z", "value": 18},
+        {"timestamp": "2026-06-27T10:20:00Z", "value": 20},
+        {"timestamp": "2026-06-27T10:25:00Z", "value": 19},
+        {"timestamp": "2026-06-27T10:30:00Z", "value": 21},
+        {"timestamp": "2026-06-27T10:35:00Z", "value": 18},
+        {"timestamp": "2026-06-27T10:40:00Z", "value": 20},
+        {"timestamp": "2026-06-27T10:45:00Z", "value": 19},
+        {"timestamp": "2026-06-27T10:50:00Z", "value": 22},
+        {"timestamp": "2026-06-27T10:55:00Z", "value": 20},
+        {"timestamp": "2026-06-27T11:00:00Z", "value": 19},
+        {"timestamp": "2026-06-27T11:05:00Z", "value": 21},
+        {"timestamp": "2026-06-27T11:10:00Z", "value": 18},
+        {"timestamp": "2026-06-27T11:15:00Z", "value": 20}
+      ]
+    }
+  }
+}

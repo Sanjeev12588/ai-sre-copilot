@@ -1,0 +1,130 @@
+[
+  {
+    "incident_id": "INC-789",
+    "title": "Database Connection Pool Exhaustion — Checkout Service",
+    "date": "2026-03-15",
+    "severity": "P1",
+    "duration_minutes": 47,
+    "affected_services": ["checkout-service", "billing-service", "payments-db-v2"],
+    "root_cause": "Connection leak in checkout-service BillingProcessor module. PreparedStatement objects in processBillingRecord() were not closed after use, causing the HikariCP pool to gradually saturate over a 75-minute window.",
+    "contributing_factors": [
+      "Missing try-finally block in BillingProcessor.processBillingRecord()",
+      "HikariCP max-lifetime not configured (defaults to 30 min, allowing long-lived leaks)",
+      "No proactive connection leak detection alerts below 80% threshold"
+    ],
+    "resolution_summary": "Applied RB-DB-004 (Graceful Pool Reset). Terminated 94 idle-in-transaction connections. Deployed patch (PR#4821) to add proper finally block closing PreparedStatements.",
+    "runbook_used": "RB-DB-004",
+    "timeline": [
+      {"time": "10:00", "event": "Normal operation. Pool at 35%."},
+      {"time": "10:30", "event": "Pool reaches 62%. BillingProcessor leak begins."},
+      {"time": "11:00", "event": "Pool at 99%. Alerts fire."},
+      {"time": "11:15", "event": "Pool saturated at 100%. checkout-service returns 503."},
+      {"time": "11:20", "event": "RCA identifies BillingProcessor leak. RB-DB-004 approved."},
+      {"time": "11:35", "event": "RB-DB-004 executed. Pool reset to 8%."},
+      {"time": "11:47", "event": "Full recovery. All services healthy."},
+      {"time": "12:00", "event": "Patch deployed. Post-mortem scheduled."}
+    ],
+    "lessons_learned": [
+      "Implement HikariCP leak detection threshold at 30 seconds",
+      "Add connection pool alert at 70% (not 95%) for earlier warning",
+      "Mandatory code review for all PreparedStatement usage patterns",
+      "Add integration test for connection cleanup in BillingProcessor"
+    ],
+    "metrics_at_peak": {
+      "db_connection_pool_usage": 100,
+      "error_rate_req_per_sec": 9.78,
+      "latency_p99_ms": 30000,
+      "users_impacted_estimate": 4200
+    }
+  },
+  {
+    "incident_id": "INC-712",
+    "title": "Cache Stampede — Checkout Session Cache",
+    "date": "2026-01-22",
+    "severity": "P2",
+    "duration_minutes": 18,
+    "affected_services": ["checkout-service", "cache-service"],
+    "root_cause": "Simultaneous cache expiry of 50,000 checkout session keys (TTL set to flat 3600s with no jitter). All keys expired at the same second, causing a thundering herd against payments-db-v2.",
+    "contributing_factors": [
+      "Missing TTL jitter in cache key creation",
+      "No circuit breaker for cache-miss fallback path",
+      "DB connection pool not sized for worst-case stampede load"
+    ],
+    "resolution_summary": "Applied RB-CACHE-001. Flushed expired keys. Deployed cache key creation fix with ±300s random TTL jitter.",
+    "runbook_used": "RB-CACHE-001",
+    "timeline": [
+      {"time": "14:00", "event": "Mass cache expiry triggers stampede."},
+      {"time": "14:03", "event": "DB load spikes 5x. Latency degrades."},
+      {"time": "14:08", "event": "Cache repopulated after stampede settles."},
+      {"time": "14:18", "event": "Full recovery confirmed."}
+    ],
+    "lessons_learned": [
+      "Always use TTL jitter for bulk cache operations",
+      "Add stampede-resistant cache patterns (probabilistic early expiry)",
+      "Cache hit rate monitoring with alerts below 90%"
+    ],
+    "metrics_at_peak": {
+      "db_connection_pool_usage": 78,
+      "cache_hit_rate_pct": 0,
+      "latency_p99_ms": 2800
+    }
+  },
+  {
+    "incident_id": "INC-654",
+    "title": "Auth Service Token Validation Latency Spike",
+    "date": "2025-11-08",
+    "severity": "P2",
+    "duration_minutes": 22,
+    "affected_services": ["auth-service", "api-gateway"],
+    "root_cause": "JWT validation performance regression introduced in auth-service v2.4.1. RSA key loading switched from cached to on-demand, causing 400ms overhead per request.",
+    "contributing_factors": [
+      "Missing performance benchmark in CI pipeline for auth-service",
+      "No canary deployment for auth-service — full rollout pushed directly"
+    ],
+    "resolution_summary": "Rolled back auth-service from v2.4.1 to v2.4.0 via kubectl rollout undo. Root cause patched in v2.4.2.",
+    "runbook_used": "RB-SVC-001",
+    "timeline": [
+      {"time": "09:15", "event": "auth-service v2.4.1 deployed."},
+      {"time": "09:18", "event": "Latency p99 spikes to 450ms (baseline: 18ms)."},
+      {"time": "09:22", "event": "API gateway 504s start appearing."},
+      {"time": "09:30", "event": "Rollback initiated."},
+      {"time": "09:37", "event": "auth-service v2.4.0 running. Latency normalized."}
+    ],
+    "lessons_learned": [
+      "Add performance regression tests to auth-service CI pipeline",
+      "Use canary deployments for all auth-service updates",
+      "Alert on auth latency > 50ms (tightened from 200ms)"
+    ],
+    "metrics_at_peak": {
+      "auth_latency_p99_ms": 450,
+      "api_gateway_504_rate_pct": 12
+    }
+  },
+  {
+    "incident_id": "INC-521",
+    "title": "Notification Service Queue Saturation",
+    "date": "2025-08-14",
+    "severity": "P3",
+    "duration_minutes": 95,
+    "affected_services": ["notification-service"],
+    "root_cause": "Runaway marketing email campaign job consumed all AMQP queue workers, blocking transactional notification delivery (order confirmations, alerts).",
+    "contributing_factors": [
+      "No priority queue separation between transactional and marketing notifications",
+      "Campaign job lacked rate limiting",
+      "Worker pool not auto-scaled under queue depth"
+    ],
+    "resolution_summary": "Killed runaway campaign job. Implemented priority queue separation. Added rate limiting at 1000 campaign messages/minute.",
+    "runbook_used": null,
+    "timeline": [
+      {"time": "11:00", "event": "Marketing campaign job started. 2M messages enqueued."},
+      {"time": "11:05", "event": "Queue backlog exceeds 500k. Transactional notifications delayed."},
+      {"time": "12:00", "event": "Campaign job killed. Queue draining."},
+      {"time": "12:35", "event": "Backlog cleared. Transactional delivery restored."}
+    ],
+    "lessons_learned": [
+      "Separate transactional and bulk notification queues",
+      "Rate limit all bulk messaging jobs",
+      "Auto-scale notification workers based on queue depth"
+    ]
+  }
+]

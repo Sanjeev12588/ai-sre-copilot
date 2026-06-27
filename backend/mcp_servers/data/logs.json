@@ -1,0 +1,193 @@
+{
+  "checkout-service": [
+    {
+      "timestamp": "2026-06-27T10:22:15Z",
+      "level": "WARNING",
+      "service": "checkout-service",
+      "message": "DB connection pool utilization at 50%. Monitor for growth.",
+      "trace_id": "3f2a1b9c-d4e5-4890-b234-8e1f2d3c4a5b",
+      "metadata": {"pool_size": 100, "active_connections": 50, "idle_connections": 50}
+    },
+    {
+      "timestamp": "2026-06-27T10:35:08Z",
+      "level": "WARNING",
+      "service": "checkout-service",
+      "message": "HikariCP - Connection pool usage at 70%. Consider reviewing connection leak in BillingIntegrationService.",
+      "trace_id": "4a1b2c3d-5e6f-7890-a1b2-c3d4e5f60718",
+      "metadata": {"pool_size": 100, "active_connections": 70, "connection_timeout_ms": 3000}
+    },
+    {
+      "timestamp": "2026-06-27T10:48:32Z",
+      "level": "ERROR",
+      "service": "checkout-service",
+      "message": "SQLTimeoutException: Connection pool exhausted waiting for connection. Timeout after 3000ms. checkout.billing.BillingProcessor.processBillingRecord() line 247",
+      "trace_id": "5b2c3d4e-6f7a-8901-b2c3-d4e5f6a70829",
+      "metadata": {
+        "pool_size": 100,
+        "active_connections": 85,
+        "stack_trace": "com.acme.checkout.billing.BillingProcessor.processBillingRecord(BillingProcessor.java:247)\ncom.acme.checkout.OrderService.completeOrder(OrderService.java:189)\ncom.acme.checkout.CheckoutController.checkout(CheckoutController.java:112)"
+      }
+    },
+    {
+      "timestamp": "2026-06-27T10:55:44Z",
+      "level": "ERROR",
+      "service": "checkout-service",
+      "message": "Connection leak detected: PreparedStatement not closed in BillingProcessor.processBillingRecord(). Connection held for >30s.",
+      "trace_id": "6c3d4e5f-7a8b-9012-c3d4-e5f6a7b80930",
+      "metadata": {
+        "leaked_connection_age_ms": 34500,
+        "caller": "BillingProcessor.processBillingRecord",
+        "line": 247
+      }
+    },
+    {
+      "timestamp": "2026-06-27T11:00:12Z",
+      "level": "CRITICAL",
+      "service": "checkout-service",
+      "message": "CRITICAL: DB connection pool is 99% saturated. New orders failing with 503 Service Unavailable.",
+      "trace_id": "7d4e5f6a-8b9c-0123-d4e5-f6a7b8c90a41",
+      "metadata": {"pool_size": 100, "active_connections": 99, "failed_requests_last_60s": 1250}
+    },
+    {
+      "timestamp": "2026-06-27T11:05:03Z",
+      "level": "CRITICAL",
+      "service": "checkout-service",
+      "message": "Unable to acquire connection from pool com.zaxxer.hikari.HikariDataSource@7f2c3d4e. Timeout after 3000ms. Thread: pool-1-thread-47.",
+      "trace_id": "8e5f6a7b-9c0d-1234-e5f6-a7b8c9d0ab52",
+      "metadata": {
+        "pool_size": 100,
+        "active_connections": 100,
+        "waiting_threads": 47,
+        "hikari_pool_name": "HikariPool-1"
+      }
+    },
+    {
+      "timestamp": "2026-06-27T11:10:55Z",
+      "level": "CRITICAL",
+      "service": "checkout-service",
+      "message": "Connection pool fully saturated for 5+ minutes. BillingProcessor connections appear leaked. Recommend pool reset.",
+      "trace_id": "9f6a7b8c-0d1e-2345-f6a7-b8c9d0e1bc63",
+      "metadata": {
+        "pool_size": 100,
+        "active_connections": 100,
+        "idle_connections": 0,
+        "pending_threads": 83,
+        "oldest_connection_age_ms": 342000
+      }
+    },
+    {
+      "timestamp": "2026-06-27T11:15:00Z",
+      "level": "CRITICAL",
+      "service": "checkout-service",
+      "message": "checkout-service HEALTH CHECK FAILED. DB dependency unavailable. Returning 503 for all /checkout/* endpoints.",
+      "trace_id": "a07b8c9d-1e2f-3456-a7b8-c9d0e1f2cd74",
+      "metadata": {
+        "health_check": "FAILED",
+        "failed_dependencies": ["payments-db-v2"],
+        "http_status": 503
+      }
+    }
+  ],
+  "billing-service": [
+    {
+      "timestamp": "2026-06-27T10:30:22Z",
+      "level": "WARNING",
+      "service": "billing-service",
+      "message": "Database connection pool usage at 72% for payments-db-v2. Elevated from baseline of 25%.",
+      "trace_id": "b18c9d0e-2f3a-4567-b8c9-d0e1f2a3de85",
+      "metadata": {"pool_size": 50, "active_connections": 36}
+    },
+    {
+      "timestamp": "2026-06-27T10:50:18Z",
+      "level": "ERROR",
+      "service": "billing-service",
+      "message": "Failed to acquire database connection for invoice generation. ConnectionPoolTimeoutException after 5000ms.",
+      "trace_id": "c29d0e1f-3a4b-5678-c9d0-e1f2a3b4ef96",
+      "metadata": {
+        "pool_size": 50,
+        "active_connections": 50,
+        "operation": "InvoiceService.generateInvoice",
+        "timeout_ms": 5000
+      }
+    },
+    {
+      "timestamp": "2026-06-27T11:08:45Z",
+      "level": "ERROR",
+      "service": "billing-service",
+      "message": "gRPC UNAVAILABLE: payments-db-v2 connection pool exhausted. Billing service returning UNAVAILABLE to checkout-service.",
+      "trace_id": "d3ae1f2a-4b5c-6789-d0e1-f2a3b4c5f0a7",
+      "metadata": {"grpc_status": "UNAVAILABLE", "downstream": "checkout-service"}
+    }
+  ],
+  "payments-db-v2": [
+    {
+      "timestamp": "2026-06-27T10:55:00Z",
+      "level": "ERROR",
+      "service": "payments-db-v2",
+      "message": "FATAL: remaining connection slots are reserved for replication superuser connections",
+      "trace_id": "e4bf2a3b-5c6d-7890-e1f2-a3b4c5d6e1b8",
+      "metadata": {
+        "max_connections": 100,
+        "current_connections": 100,
+        "superuser_reserved": 3
+      }
+    },
+    {
+      "timestamp": "2026-06-27T11:00:05Z",
+      "level": "CRITICAL",
+      "service": "payments-db-v2",
+      "message": "pg_stat_activity: 97 idle-in-transaction connections detected. Possible connection leak from application layer.",
+      "trace_id": "f5c03b4c-6d7e-8901-f2a3-b4c5d6e7f2c9",
+      "metadata": {
+        "idle_in_transaction": 97,
+        "total_connections": 100,
+        "suspected_source": "checkout-service BillingProcessor"
+      }
+    },
+    {
+      "timestamp": "2026-06-27T11:10:30Z",
+      "level": "CRITICAL",
+      "service": "payments-db-v2",
+      "message": "Lock waits detected. 83 transactions blocked waiting for row-level locks. Potential deadlock risk.",
+      "trace_id": "a6d14c5d-7e8f-9012-a3b4-c5d6e7f8a3da",
+      "metadata": {
+        "blocked_transactions": 83,
+        "lock_type": "tuple",
+        "blocking_pid": 12847
+      }
+    }
+  ],
+  "api-gateway": [
+    {
+      "timestamp": "2026-06-27T11:02:15Z",
+      "level": "WARNING",
+      "service": "api-gateway",
+      "message": "Upstream checkout-service returning elevated 503 rate: 45% of /checkout/* requests failing.",
+      "trace_id": "b7e25d6e-8f9a-0123-b4c5-d6e7f8a9b4eb",
+      "metadata": {"upstream": "checkout-service", "error_rate_pct": 45, "route": "/checkout/*"}
+    },
+    {
+      "timestamp": "2026-06-27T11:10:45Z",
+      "level": "ERROR",
+      "service": "api-gateway",
+      "message": "Circuit breaker OPEN for checkout-service. 90%+ 5xx error rate over 30s. All /checkout/* traffic rejected.",
+      "trace_id": "c8f36e7f-9a0b-1234-c5d6-e7f8a9b0c5fc",
+      "metadata": {
+        "circuit_breaker": "OPEN",
+        "upstream": "checkout-service",
+        "error_rate_pct": 92,
+        "window_seconds": 30
+      }
+    }
+  ],
+  "auth-service": [
+    {
+      "timestamp": "2026-06-27T11:00:00Z",
+      "level": "INFO",
+      "service": "auth-service",
+      "message": "Token validation healthy. No anomalies detected. auth-service operating normally.",
+      "trace_id": "d9047f80-0b1c-2345-d6e7-f8a9b0c1d60d",
+      "metadata": {"tokens_validated_last_60s": 25200, "cache_hit_rate_pct": 98}
+    }
+  ]
+}
