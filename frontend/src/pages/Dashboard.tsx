@@ -41,8 +41,8 @@ export const Dashboard: React.FC = () => {
     setSuccessId(null);
 
     // Build template payloads
-    let raw_alert = {};
-    let title = customTitle || "Alert triggered from control center";
+    let raw_alert: Record<string, any>;
+    let title: string;
     let env = "production";
 
     if (alertTemplate === "db") {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -37,7 +37,7 @@ export const IncidentDetail: React.FC = () => {
   const wsRef = useRef<WebSocket | null>(null);
 
   // Load baseline REST data
-  const loadBaselineData = async () => {
+  const loadBaselineData = useCallback(async () => {
     if (!id) return;
     try {
       setError(null);
@@ -65,7 +65,7 @@ export const IncidentDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   // Rest-load effect
   useEffect(() => {
@@ -75,7 +75,7 @@ export const IncidentDetail: React.FC = () => {
         wsRef.current.close();
       }
     };
-  }, [id]);
+  }, [id, loadBaselineData]);
 
   // WebSocket connection & lifecycle translation effect
   useEffect(() => {
@@ -129,7 +129,7 @@ export const IncidentDetail: React.FC = () => {
         wsRef.current.close();
       }
     };
-  }, [id]);
+  }, [id, loadBaselineData]);
 
   // Auto-scroll terminal log to bottom (Tail follow logs)
   useEffect(() => {
