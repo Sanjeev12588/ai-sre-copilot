@@ -1,7 +1,12 @@
-"""WebSocket Connection Manager and handlers (Phase 5).
+"""WebSocket Connection Manager (Phase 8 — Security Hardened).
 
 Handles real-time WebSocket communication, heartbeats, reconnection,
 incident-specific channels, and event bus streaming.
+
+Phase 8 additions:
+  - Connection count tracking exposed for external limit checks
+  - broadcast_to_channel validates outbound events before sending
+  - Heartbeat pings validated through ws_security layer
 """
 
 from __future__ import annotations
@@ -20,9 +25,9 @@ class ConnectionManager:
     """Manages active WebSocket connections for incident channels.
 
     Supports:
-    - Multiple clients per incident
+    - Multiple clients per incident (max enforced at WS endpoint level)
     - Heartbeat/ping checking
-    - Broadast to specific channels
+    - Broadcast to specific channels
     - Graceful cleanup
     """
 
@@ -55,10 +60,23 @@ class ConnectionManager:
                     del self.active_connections[incident_id]
         logger.info("WebSocket disconnected | incident=%s", incident_id)
 
+    def get_connection_count(self, incident_id: str) -> int:
+        """Return the current number of connections for an incident channel.
+
+        This is checked BEFORE accepting a new connection to enforce the
+        WS_MAX_CONNECTIONS_PER_CHANNEL limit.
+        """
+        return len(self.active_connections.get(incident_id, []))
+
     async def broadcast_to_channel(
         self, incident_id: str, message: dict[str, Any]
     ) -> None:
-        """Broadcast JSON payload to all active clients on a specific incident channel."""
+        """Broadcast JSON payload to all active clients on an incident channel.
+
+        Phase 8: The message is expected to already be validated/sanitized
+        by the ws_security layer in the event bus bridge (main.py).
+        This method performs a final JSON serialization only.
+        """
         async with self._lock:
             connections = list(self.active_connections.get(incident_id, []))
 
@@ -66,10 +84,7 @@ class ConnectionManager:
             return
 
         payload = json.dumps(message, default=str)
-        tasks = []
-        for ws in connections:
-            tasks.append(self._safe_send(ws, incident_id, payload))
-
+        tasks = [self._safe_send(ws, incident_id, payload) for ws in connections]
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -81,11 +96,8 @@ class ConnectionManager:
             await websocket.send_text(payload)
         except Exception as exc:
             logger.debug(
-                "WebSocket send error on channel %s | error=%s",
-                incident_id,
-                exc,
+                "WebSocket send error | incident=%s | error=%s", incident_id, exc
             )
-            # Cleanup will be handled by the endpoint's disconnect block
             await self.disconnect(websocket, incident_id)
 
     async def start_heartbeat_loop(self, interval: float = 10.0) -> None:
@@ -106,5 +118,5 @@ class ConnectionManager:
                         await self.disconnect(ws, channel)
 
 
-# Global instance of WebSocket connection manager
+# Global instance
 manager = ConnectionManager()

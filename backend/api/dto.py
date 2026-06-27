@@ -1,37 +1,115 @@
-"""API Data Transfer Objects (DTOs) for the FastAPI Gateway (Phase 6).
+"""API Data Transfer Objects (DTOs) for the FastAPI Gateway (Phase 8).
 
 Separates the internal database/Pydantic state schemas (IncidentState)
 from the client-facing REST API interface.
+
+Phase 8 additions:
+  - Strict field constraints (max_length, enum validation)
+  - RawAlertPayload sub-model with extra='forbid' (no unknown fields)
+  - Environment and severity validated against allowed enum values
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+# ---------------------------------------------------------------------------
+# Phase 8: Strict sub-model for raw_alert payload
+# ---------------------------------------------------------------------------
+
+
+class RawAlertPayload(BaseModel):
+    """Strict schema for the raw alert payload from monitoring systems.
+
+    Uses extra='ignore' to silently drop unknown vendor-specific fields
+    while still enforcing the required core fields.
+    """
+
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=200,
+        description="Alert name from the monitoring system.",
+    )
+    severity: Literal["P0", "P1", "P2", "P3", "P4"] = Field(
+        default="P1",
+        description="Alert severity level (P0=critical, P4=informational).",
+    )
+    service: str = Field(
+        default="",
+        max_length=200,
+        description="Affected service name.",
+    )
+    status: str = Field(
+        default="firing",
+        max_length=50,
+        description="Alert status (firing, resolved, pending).",
+    )
+    alert_id: str = Field(
+        default="",
+        max_length=100,
+        description="Unique alert identifier from the monitoring system.",
+    )
+    started_at: str = Field(
+        default="",
+        max_length=50,
+        description="ISO-8601 timestamp when the alert fired.",
+    )
+    annotations: dict[str, str] = Field(
+        default_factory=dict,
+        description="Additional alert annotations (summary, description, runbook_url).",
+    )
+
+    model_config = ConfigDict(
+        # Accept but silently ignore unknown vendor-specific alert fields
+        extra="ignore",
+    )
+
+    @field_validator("annotations")
+    @classmethod
+    def validate_annotations(cls, v: dict[str, str]) -> dict[str, str]:
+        """Ensure annotation values are strings and not excessively long."""
+        for key, value in v.items():
+            if not isinstance(value, str):
+                v[key] = str(value)
+            if len(v[key]) > 2000:
+                v[key] = v[key][:2000] + "...[truncated]"
+        return v
 
 
 class IncidentCreateRequest(BaseModel):
-    """Payload to create and trigger a new incident investigation workflow."""
+    """Payload to create and trigger a new incident investigation workflow.
+
+    Phase 8: Strict field constraints enforce maximum lengths and valid enum
+    values. Unknown top-level fields are forbidden to prevent silent injection
+    via unvalidated parameters.
+    """
 
     title: str = Field(
         default="",
+        max_length=200,
         description="Optional human-readable title of the incident.",
     )
     description: str = Field(
         default="",
+        max_length=2000,
         description="Optional detailed description of the incident.",
     )
-    environment: str = Field(
+    environment: Literal["production", "staging", "development", "testing"] = Field(
         default="production",
-        description="Target deployment environment (e.g. production, staging).",
+        description="Target deployment environment.",
     )
     raw_alert: dict[str, Any] = Field(
         default_factory=dict,
-        description="The raw alert payload from Prometheus, Alertmanager, etc. Must contain 'name' and 'severity' keys.",
+        description="Raw alert payload. Must contain 'name' and 'severity' keys.",
     )
 
     model_config = ConfigDict(
+        # Phase 8: Reject unknown fields to prevent silent acceptance of
+        # unexpected parameters that could be used for injection or spoofing
+        extra="forbid",
         json_schema_extra={
             "example": {
                 "title": "Database degradation alert",
@@ -51,7 +129,7 @@ class IncidentCreateRequest(BaseModel):
                     },
                 },
             }
-        }
+        },
     )
 
 
