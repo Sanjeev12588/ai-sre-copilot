@@ -1,7 +1,8 @@
-"""REST API routes for incident management (Phase 5).
+"""REST API routes for incident management (Phase 6).
 
 Provides endpoints to create, list, and inspect incidents, including
 retrieving their timeline audit logs and final post-mortem reports.
+All paths are prefixed with /api/v1/ and follow a standardized contract.
 """
 
 from __future__ import annotations
@@ -12,6 +13,10 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 
 from backend.api.dto import (
+    AgentStatusResponse,
+    ErrorDetailResponse,
+    EvaluationResponse,
+    IncidentAgentsResponse,
     IncidentCreateRequest,
     IncidentResponse,
     ReportResponse,
@@ -29,7 +34,8 @@ from backend.utils.incident_utils import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/incidents", tags=["Incidents"])
+# Router defined without prefix so main.py can mount it under v1 and legacy paths
+router = APIRouter(tags=["Incidents"])
 
 
 # ---------------------------------------------------------------------------
@@ -56,20 +62,24 @@ def get_orchestrator(request: Request) -> ADKWorkflowOrchestrator:
     "",
     response_model=IncidentResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {"model": ErrorDetailResponse, "description": "Invalid payload / inputs"},
+        422: {"model": ErrorDetailResponse, "description": "Validation error"},
+    },
     summary="Create a new incident and trigger investigation",
+    description="Intakes a raw SRE alert, initializes a new incident case file in status NEW, and schedules the multi-agent investigation workflow in the background.",
 )
 async def create_incident(
     payload: IncidentCreateRequest,
+    request: Request,
     background_tasks: BackgroundTasks,
     store: IncidentStore = Depends(get_store),
     orchestrator: ADKWorkflowOrchestrator = Depends(get_orchestrator),
 ) -> Any:
-    """Create a new incident record and launch the investigation workflow.
-
-    Runs the ADK multi-agent workflow in the background.
-    """
+    """Create a new incident and run investigation workflow in the background."""
     incident_id = generate_incident_id()
     now = utc_now_iso()
+    request_id = request.state.request_id
 
     # Pre-populate title/description if not provided
     title = payload.title or f"Alert: {payload.raw_alert.get('name', 'Unknown Alert')}"
@@ -78,7 +88,7 @@ async def create_incident(
         or f"Triggered on service: {payload.raw_alert.get('service', 'unknown')}"
     )
 
-    # Build the initial incident state
+    # Build the initial incident state and save request tracing in metadata
     severity = payload.raw_alert.get("severity", "P1")
     state = IncidentState(
         incident_id=incident_id,
@@ -90,6 +100,7 @@ async def create_incident(
         raw_alert=payload.raw_alert,
         created_at=now,
         updated_at=now,
+        metadata={"request_id": request_id},
     )
 
     # Append first timeline entry
@@ -103,20 +114,28 @@ async def create_incident(
 
     # Save to persistence
     store.save(state)
-    logger.info("Incident created | incident=%s", incident_id)
+    logger.info(
+        "Incident created | incident=%s | request_id=%s", incident_id, request_id
+    )
 
     # Publish lifecycle event
     publish_event(
         IncidentEventType.INCIDENT_CREATED,
         incident_id=incident_id,
-        payload={"status": state.status, "environment": state.environment},
+        payload={
+            "request_id": request_id,
+            "agent": "system",
+            "status": state.status,
+            "environment": state.environment,
+        },
     )
 
-    # Queue the long-running ADK multi-agent workflow as a background task
+    # Queue the long-running ADK workflow as background task, propagating request_id
     background_tasks.add_task(
         orchestrator.execute_workflow,
         incident_id=incident_id,
         raw_alert=payload.raw_alert,
+        request_id=request_id,
     )
 
     return _to_incident_response(state)
@@ -125,7 +144,11 @@ async def create_incident(
 @router.get(
     "",
     response_model=list[IncidentResponse],
+    responses={
+        500: {"model": ErrorDetailResponse, "description": "Internal server error"},
+    },
     summary="List all incidents",
+    description="Returns a list of all active (non-archived) SRE incident case files.",
 )
 async def list_incidents(store: IncidentStore = Depends(get_store)) -> Any:
     """Return all active (non-archived) incidents."""
@@ -144,51 +167,128 @@ async def list_incidents(store: IncidentStore = Depends(get_store)) -> Any:
 @router.get(
     "/{incident_id}",
     response_model=IncidentResponse,
+    responses={
+        404: {"model": ErrorDetailResponse, "description": "Incident not found"},
+    },
     summary="Retrieve incident details",
+    description="Loads a specific incident case file by its ID.",
 )
 async def get_incident(
     incident_id: str,
     store: IncidentStore = Depends(get_store),
 ) -> Any:
-    """Retrieve details for a specific incident."""
-    try:
-        state = store.load(incident_id)
-        return _to_incident_response(state)
-    except IncidentNotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Incident {incident_id} not found.",
-        )
+    state = store.load(incident_id)
+    return _to_incident_response(state)
 
 
 @router.get(
     "/{incident_id}/timeline",
     response_model=list[TimelineEntryResponse],
+    responses={
+        404: {"model": ErrorDetailResponse, "description": "Incident not found"},
+    },
     summary="Retrieve incident timeline audit log",
+    description="Returns the full chronological timeline of events, tool calls, and decisions for the incident.",
 )
 async def get_incident_timeline(
     incident_id: str,
     store: IncidentStore = Depends(get_store),
 ) -> Any:
-    """Retrieve the event timeline for a specific incident."""
+    state = store.load(incident_id)
+    return [
+        TimelineEntryResponse(
+            timestamp=entry.timestamp,
+            agent_name=entry.agent_name or entry.agent,
+            event_type=str(entry.event_type.value)
+            if hasattr(entry.event_type, "value")
+            else str(entry.event_type),
+            action=entry.action,
+            summary=entry.summary or entry.message,
+            confidence=entry.confidence,
+            tools_used=entry.tools_used,
+            duration_ms=entry.duration_ms,
+            entry_status=entry.entry_status,
+        )
+        for entry in state.timeline
+    ]
+
+
+@router.get(
+    "/{incident_id}/report",
+    response_model=ReportResponse,
+    responses={
+        400: {"model": ErrorDetailResponse, "description": "Report not yet generated"},
+        404: {"model": ErrorDetailResponse, "description": "Incident not found"},
+    },
+    summary="Retrieve post-mortem report and stakeholder update",
+    description="Loads the markdown report and non-technical summary compiled by the Report Generator Agent.",
+)
+async def get_incident_report(
+    incident_id: str,
+    store: IncidentStore = Depends(get_store),
+) -> Any:
+    state = store.load(incident_id)
+    if not state.report:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Report has not yet been generated for incident {incident_id}.",
+        )
+    return ReportResponse(
+        incident_id=incident_id,
+        report=state.report,
+        stakeholder_update=state.stakeholder_update,
+        generated_at=state.updated_at,
+    )
+
+
+@router.get(
+    "/{incident_id}/agents",
+    response_model=IncidentAgentsResponse,
+    responses={
+        404: {"model": ErrorDetailResponse, "description": "Incident not found"},
+    },
+    summary="Retrieve participating SRE agents status",
+    description="Compiles and returns execution metrics, statuses, and tool usage logs for all agents involved in analyzing the incident.",
+)
+async def get_incident_agents(
+    incident_id: str,
+    store: IncidentStore = Depends(get_store),
+) -> Any:
+    """Retrieve execution metrics and status for each agent involved in the incident analysis."""
     try:
         state = store.load(incident_id)
-        return [
-            TimelineEntryResponse(
-                timestamp=entry.timestamp,
-                agent_name=entry.agent_name or entry.agent,
-                event_type=str(entry.event_type.value)
+        agents_map = {}
+        for entry in state.timeline:
+            agent_name = entry.agent_name or entry.agent
+            if not agent_name or agent_name == "system":
+                continue
+
+            event_type_str = (
+                str(entry.event_type.value)
                 if hasattr(entry.event_type, "value")
-                else str(entry.event_type),
-                action=entry.action,
-                summary=entry.summary or entry.message,
-                confidence=entry.confidence,
-                tools_used=entry.tools_used,
-                duration_ms=entry.duration_ms,
-                entry_status=entry.entry_status,
+                else str(entry.event_type)
             )
-            for entry in state.timeline
-        ]
+
+            # Determine agent status from timeline logs
+            if "started" in event_type_str.lower() or "run" in entry.action.lower():
+                status_val = "RUNNING"
+            elif "failed" in event_type_str.lower() or entry.entry_status == "FAILURE":
+                status_val = "FAILED"
+            else:
+                status_val = "COMPLETED"
+
+            agents_map[agent_name] = AgentStatusResponse(
+                agent_name=agent_name,
+                status=status_val,
+                last_active_at=entry.timestamp or utc_now_iso(),
+                duration_ms=entry.duration_ms,
+                tools_used=entry.tools_used,
+            )
+
+        return IncidentAgentsResponse(
+            incident_id=incident_id,
+            agents=list(agents_map.values()),
+        )
     except IncidentNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -197,27 +297,27 @@ async def get_incident_timeline(
 
 
 @router.get(
-    "/{incident_id}/report",
-    response_model=ReportResponse,
-    summary="Retrieve post-mortem report and stakeholder update",
+    "/{incident_id}/evaluation",
+    response_model=EvaluationResponse,
+    responses={
+        404: {"model": ErrorDetailResponse, "description": "Incident not found"},
+    },
+    summary="Retrieve evaluator results",
+    description="Loads the evaluation validation status, notes, and verdict score produced by the Evaluator Agent.",
 )
-async def get_incident_report(
+async def get_incident_evaluation(
     incident_id: str,
     store: IncidentStore = Depends(get_store),
 ) -> Any:
-    """Retrieve the generated post-mortem report and non-technical summary."""
+    """Retrieve evaluation verdict, notes, and confidence details."""
     try:
         state = store.load(incident_id)
-        if not state.report:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Report has not yet been generated for incident {incident_id}.",
-            )
-        return ReportResponse(
+        return EvaluationResponse(
             incident_id=incident_id,
-            report=state.report,
-            stakeholder_update=state.stakeholder_update,
-            generated_at=state.updated_at,
+            verdict=state.diagnostics.evaluator_verdict or "NOT_STARTED",
+            notes=state.diagnostics.evaluation_notes or "Evaluation not yet performed.",
+            confidence_score=state.diagnostics.confidence_score,
+            evaluated_at=state.updated_at,
         )
     except IncidentNotFoundError:
         raise HTTPException(

@@ -1,0 +1,1389 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI SRE Copilot Application Gateway",
+    "description": "Application gateway connecting SRE agents, MCP servers, and persistent case files.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/incidents": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "List all incidents",
+        "description": "Returns a list of all active (non-archived) SRE incident case files.",
+        "operationId": "list_incidents_api_v1_incidents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Incidents Api V1 Incidents Get"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Create a new incident and trigger investigation",
+        "description": "Intakes a raw SRE alert, initializes a new incident case file in status NEW, and schedules the multi-agent investigation workflow in the background.",
+        "operationId": "create_incident_api_v1_incidents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload / inputs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve incident details",
+        "description": "Loads a specific incident case file by its ID.",
+        "operationId": "get_incident_api_v1_incidents__incident_id__get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/timeline": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve incident timeline audit log",
+        "description": "Returns the full chronological timeline of events, tool calls, and decisions for the incident.",
+        "operationId": "get_incident_timeline_api_v1_incidents__incident_id__timeline_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimelineEntryResponse"
+                  },
+                  "title": "Response Get Incident Timeline Api V1 Incidents  Incident Id  Timeline Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/report": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve post-mortem report and stakeholder update",
+        "description": "Loads the markdown report and non-technical summary compiled by the Report Generator Agent.",
+        "operationId": "get_incident_report_api_v1_incidents__incident_id__report_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Report not yet generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/agents": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve participating SRE agents status",
+        "description": "Compiles and returns execution metrics, statuses, and tool usage logs for all agents involved in analyzing the incident.",
+        "operationId": "get_incident_agents_api_v1_incidents__incident_id__agents_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentAgentsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/incidents/{incident_id}/evaluation": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve evaluator results",
+        "description": "Loads the evaluation validation status, notes, and verdict score produced by the Evaluator Agent.",
+        "operationId": "get_incident_evaluation_api_v1_incidents__incident_id__evaluation_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/incidents": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "List all incidents",
+        "description": "Returns a list of all active (non-archived) SRE incident case files.",
+        "operationId": "list_incidents_api_incidents_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/IncidentResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Incidents Api Incidents Get"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Create a new incident and trigger investigation",
+        "description": "Intakes a raw SRE alert, initializes a new incident case file in status NEW, and schedules the multi-agent investigation workflow in the background.",
+        "operationId": "create_incident_api_incidents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload / inputs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/incidents/{incident_id}": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve incident details",
+        "description": "Loads a specific incident case file by its ID.",
+        "operationId": "get_incident_api_incidents__incident_id__get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/incidents/{incident_id}/timeline": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve incident timeline audit log",
+        "description": "Returns the full chronological timeline of events, tool calls, and decisions for the incident.",
+        "operationId": "get_incident_timeline_api_incidents__incident_id__timeline_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimelineEntryResponse"
+                  },
+                  "title": "Response Get Incident Timeline Api Incidents  Incident Id  Timeline Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/incidents/{incident_id}/report": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve post-mortem report and stakeholder update",
+        "description": "Loads the markdown report and non-technical summary compiled by the Report Generator Agent.",
+        "operationId": "get_incident_report_api_incidents__incident_id__report_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Report not yet generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/incidents/{incident_id}/agents": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve participating SRE agents status",
+        "description": "Compiles and returns execution metrics, statuses, and tool usage logs for all agents involved in analyzing the incident.",
+        "operationId": "get_incident_agents_api_incidents__incident_id__agents_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentAgentsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/incidents/{incident_id}/evaluation": {
+      "get": {
+        "tags": [
+          "Incidents"
+        ],
+        "summary": "Retrieve evaluator results",
+        "description": "Loads the evaluation validation status, notes, and verdict score produced by the Evaluator Agent.",
+        "operationId": "get_incident_evaluation_api_incidents__incident_id__evaluation_get",
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Incident Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "Standardized health check",
+        "description": "Basic health check verifying the application gateway is running.",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Check Api V1 Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check alias",
+        "description": "Basic health check verifying the application gateway is running.",
+        "operationId": "health_check_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Check Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check alias",
+        "description": "Basic health check verifying the application gateway is running.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ready": {
+      "get": {
+        "summary": "Standardized readiness check",
+        "description": "Verify that all upstream systems (like persistence directory) are ready.",
+        "operationId": "readiness_check_api_v1_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ready": {
+      "get": {
+        "summary": "Readiness check alias",
+        "description": "Verify that all upstream systems (like persistence directory) are ready.",
+        "operationId": "readiness_check_api_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Readiness check alias",
+        "description": "Verify that all upstream systems (like persistence directory) are ready.",
+        "operationId": "readiness_check_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentStatusResponse": {
+        "properties": {
+          "agent_name": {
+            "type": "string",
+            "title": "Agent Name",
+            "description": "Unique name of the agent (e.g. LogAnalyzerAgent)."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current execution state (IDLE, RUNNING, COMPLETED, FAILED)."
+          },
+          "last_active_at": {
+            "type": "string",
+            "title": "Last Active At",
+            "description": "ISO-8601 UTC timestamp of the last agent activity."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "description": "Total wall-clock execution duration in milliseconds."
+          },
+          "tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools Used",
+            "description": "List of tools called by this agent."
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_name",
+          "status",
+          "last_active_at",
+          "duration_ms"
+        ],
+        "title": "AgentStatusResponse",
+        "description": "Activity state of an individual agent in the incident pipeline.",
+        "example": {
+          "agent_name": "LogAnalyzerAgent",
+          "duration_ms": 3200,
+          "last_active_at": "2026-06-27T10:01:25Z",
+          "status": "COMPLETED",
+          "tools_used": [
+            "query_logs"
+          ]
+        }
+      },
+      "ErrorDetailResponse": {
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "title": "Error Code",
+            "description": "Structured machine-readable error token (e.g. INCIDENT_NOT_FOUND)."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Detailed human-readable explanation of what went wrong."
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details",
+            "description": "Contextual metadata or sub-errors."
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id",
+            "description": "Trace identifier of the failed request."
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "ISO-8601 UTC timestamp when the error was caught."
+          }
+        },
+        "type": "object",
+        "required": [
+          "error_code",
+          "message",
+          "request_id",
+          "timestamp"
+        ],
+        "title": "ErrorDetailResponse",
+        "description": "Global standardized SRE API error response schema.",
+        "example": {
+          "details": {
+            "incident_id": "INC-GHOST"
+          },
+          "error_code": "INCIDENT_NOT_FOUND",
+          "message": "Incident INC-GHOST was not found in persistence.",
+          "request_id": "4f17c982-8de3-4697-8267-eb3ec27fadcd",
+          "timestamp": "2026-06-27T10:12:15.123456+00:00"
+        }
+      },
+      "EvaluationResponse": {
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "title": "Incident Id",
+            "description": "Target incident ID."
+          },
+          "verdict": {
+            "type": "string",
+            "title": "Verdict",
+            "description": "Evaluation verdict (e.g. PASS, FAIL)."
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes",
+            "description": "Evaluation explanation and rationale notes."
+          },
+          "confidence_score": {
+            "type": "integer",
+            "title": "Confidence Score",
+            "description": "Evaluator's confidence score (0-100)."
+          },
+          "evaluated_at": {
+            "type": "string",
+            "title": "Evaluated At",
+            "description": "ISO-8601 UTC timestamp of the evaluation."
+          }
+        },
+        "type": "object",
+        "required": [
+          "incident_id",
+          "verdict",
+          "notes",
+          "confidence_score",
+          "evaluated_at"
+        ],
+        "title": "EvaluationResponse",
+        "description": "Evaluator validation checks and verdict.",
+        "example": {
+          "confidence_score": 95,
+          "evaluated_at": "2026-06-27T10:03:45Z",
+          "incident_id": "INC-A4F3B2C1",
+          "notes": "Root cause matches the log pattern, and the recovery runbook matches the database type.",
+          "verdict": "PASS"
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IncidentAgentsResponse": {
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "title": "Incident Id",
+            "description": "Target incident ID."
+          },
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentStatusResponse"
+            },
+            "type": "array",
+            "title": "Agents",
+            "description": "Participating agent statuses."
+          }
+        },
+        "type": "object",
+        "required": [
+          "incident_id",
+          "agents"
+        ],
+        "title": "IncidentAgentsResponse",
+        "description": "List of SRE agents involved in analyzing the incident.",
+        "example": {
+          "agents": [
+            {
+              "agent_name": "IntakeAgent",
+              "duration_ms": 150,
+              "last_active_at": "2026-06-27T10:00:05Z",
+              "status": "COMPLETED",
+              "tools_used": []
+            }
+          ],
+          "incident_id": "INC-A4F3B2C1"
+        }
+      },
+      "IncidentCreateRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Optional human-readable title of the incident.",
+            "default": ""
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Optional detailed description of the incident.",
+            "default": ""
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Target deployment environment (e.g. production, staging).",
+            "default": "production"
+          },
+          "raw_alert": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Alert",
+            "description": "The raw alert payload from Prometheus, Alertmanager, etc. Must contain 'name' and 'severity' keys."
+          }
+        },
+        "type": "object",
+        "title": "IncidentCreateRequest",
+        "description": "Payload to create and trigger a new incident investigation workflow.",
+        "example": {
+          "description": "Checkout database connection pool usage is at 95%",
+          "environment": "production",
+          "raw_alert": {
+            "alert_id": "AL-12345",
+            "annotations": {
+              "description": "Database pool connections exhausted.",
+              "runbook_url": "https://wiki.company.internal/runbooks/db-pool",
+              "summary": "Checkout DB Connection Pool Full"
+            },
+            "name": "DatabaseDegradation",
+            "service": "checkout-db",
+            "severity": "P1",
+            "started_at": "2026-06-27T10:00:00Z",
+            "status": "firing"
+          },
+          "title": "Database degradation alert"
+        }
+      },
+      "IncidentResponse": {
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "title": "Incident Id",
+            "description": "Unique incident ID (INC-<8 uppercase hex characters>)."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Human-readable title of the incident."
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Detailed description of the incident."
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current status in the lifecycle (e.g. INVESTIGATING)."
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "Severity level of the incident (P0-P4)."
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Deployment environment."
+          },
+          "assigned_team": {
+            "type": "string",
+            "title": "Assigned Team",
+            "description": "On-call team assigned to the incident."
+          },
+          "recovery_status": {
+            "type": "string",
+            "title": "Recovery Status",
+            "description": "Status of recovery actions (e.g. PENDING_APPROVAL)."
+          },
+          "verification_status": {
+            "type": "string",
+            "title": "Verification Status",
+            "description": "Status of recovery verification tests."
+          },
+          "report_status": {
+            "type": "string",
+            "title": "Report Status",
+            "description": "Status of final report generation."
+          },
+          "escalation_status": {
+            "type": "string",
+            "title": "Escalation Status",
+            "description": "Status of team notifications."
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "ISO-8601 UTC timestamp of creation."
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "description": "ISO-8601 UTC timestamp of last update."
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "One-line summary of the current incident status."
+          },
+          "confidence": {
+            "type": "integer",
+            "title": "Confidence",
+            "description": "Overall pipeline confidence score (0-100).",
+            "default": 0
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEntryResponse"
+            },
+            "type": "array",
+            "title": "Timeline",
+            "description": "Audit log timeline entries."
+          }
+        },
+        "type": "object",
+        "required": [
+          "incident_id",
+          "title",
+          "description",
+          "status",
+          "severity",
+          "environment",
+          "assigned_team",
+          "recovery_status",
+          "verification_status",
+          "report_status",
+          "escalation_status",
+          "created_at",
+          "updated_at",
+          "summary"
+        ],
+        "title": "IncidentResponse",
+        "description": "Client-facing detail representation of an incident.",
+        "example": {
+          "assigned_team": "Database-SRE",
+          "confidence": 85,
+          "created_at": "2026-06-27T10:00:00Z",
+          "description": "Triggered on service: checkout-db",
+          "environment": "production",
+          "escalation_status": "SENT",
+          "incident_id": "INC-A4F3B2C1",
+          "recovery_status": "NOT_STARTED",
+          "report_status": "NOT_STARTED",
+          "severity": "P1",
+          "status": "INVESTIGATING",
+          "summary": "Triage complete. High latency confirmed on checkout service database.",
+          "timeline": [],
+          "title": "Alert: DatabaseDegradation",
+          "updated_at": "2026-06-27T10:01:30Z",
+          "verification_status": "NOT_STARTED"
+        }
+      },
+      "ReportResponse": {
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "title": "Incident Id",
+            "description": "Target incident ID."
+          },
+          "report": {
+            "type": "string",
+            "title": "Report",
+            "description": "Full post-mortem incident report in Markdown format."
+          },
+          "stakeholder_update": {
+            "type": "string",
+            "title": "Stakeholder Update",
+            "description": "Concise, jargon-free summary for stakeholders."
+          },
+          "generated_at": {
+            "type": "string",
+            "title": "Generated At",
+            "description": "ISO-8601 UTC timestamp of report generation."
+          }
+        },
+        "type": "object",
+        "required": [
+          "incident_id",
+          "report",
+          "stakeholder_update",
+          "generated_at"
+        ],
+        "title": "ReportResponse",
+        "description": "Incident report and stakeholder summary.",
+        "example": {
+          "generated_at": "2026-06-27T10:05:00Z",
+          "incident_id": "INC-A4F3B2C1",
+          "report": "# Incident Post-Mortem Report\n## Summary\nCheckout DB pool full...",
+          "stakeholder_update": "The checkout database was temporarily unavailable but has been resolved."
+        }
+      },
+      "TimelineEntryResponse": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "ISO-8601 UTC timestamp when the event occurred."
+          },
+          "agent_name": {
+            "type": "string",
+            "title": "Agent Name",
+            "description": "Name of the agent or system that created this entry."
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type",
+            "description": "Structured type of the event (e.g. ROOT_CAUSE_FOUND)."
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Short verb describing what was executed."
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "Human-readable description of the event."
+          },
+          "confidence": {
+            "type": "integer",
+            "title": "Confidence",
+            "description": "Agent confidence score at this point (0-100)."
+          },
+          "tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools Used",
+            "description": "List of MCP tools invoked during this step."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "description": "Execution duration of this agent step in milliseconds."
+          },
+          "entry_status": {
+            "type": "string",
+            "title": "Entry Status",
+            "description": "Outcome status of the step (SUCCESS, FAILURE, etc.)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "agent_name",
+          "event_type",
+          "action",
+          "summary",
+          "confidence",
+          "duration_ms",
+          "entry_status"
+        ],
+        "title": "TimelineEntryResponse",
+        "description": "Client-facing representation of a timeline event.",
+        "example": {
+          "action": "rca_completed",
+          "agent_name": "RootCauseAgent",
+          "confidence": 90,
+          "duration_ms": 1250,
+          "entry_status": "SUCCESS",
+          "event_type": "ROOT_CAUSE_FOUND",
+          "summary": "Database connection pool exhaustion detected due to slow transactional queries.",
+          "timestamp": "2026-06-27T10:02:15Z",
+          "tools_used": [
+            "query_logs",
+            "get_metrics"
+          ]
+        }
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
