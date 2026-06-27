@@ -37,3 +37,6 @@ terraform.tfstate.backup
 
 # Artifacts & traces
 artifacts/
+
+# Local data store
+data/

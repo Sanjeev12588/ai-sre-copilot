@@ -2,7 +2,7 @@
 
 AI SRE Copilot is an autonomous incident response assistant that analyzes alerts, triages incidents, investigates logs, diagnoses root causes, recommends simulated remediations, and evaluates findings.
 
-This repository represents **Phase 4: Incident Lifecycle & State Management**, implementing a production-quality shared state system, lifecycle state machine, persistence layer, session memory, utilities, and comprehensive test suite on top of the Phase 3 multi-agent pipeline.
+This repository represents **Phase 5: Application Gateway & Real-Time Orchestration**, implementing a production-ready FastAPI gateway, WebSocket streaming, event-driven orchestration, background execution, security headers, rate limiting, and integration testing on top of the Phase 4 incident state & lifecycle engine.
 
 ---
 
@@ -350,4 +350,183 @@ backend/
     incident_utils.py   # generate_incident_id, aggregate_confidence, format_timeline, …
   events/
     event_bus.py        # publish_event, subscribe, unsubscribe (WebSocket-ready)
+```
+
+---
+
+## Phase 5: Application Gateway & Real-Time Orchestration
+
+### API Architecture
+
+```
+  Client (e.g. React Dashboard)
+    │
+    ├─── [HTTP Requests] ───► FastAPI Gateway (Uvicorn / 8000)
+    │                          │
+    │                          ├── CORS, Payload limits, Secure headers
+    │                          ├── Lifespan DI: JsonIncidentStore, ADKWorkflowOrchestrator
+    │                          │
+    │                          └── REST Endpoints: GET/POST /api/incidents
+    │                                │
+    │                                └── [Background Task] ──► ADK Workflow Orchestrator
+    │                                                            │
+    │                                                            ├── Runner.run_async()
+    │                                                            ├── SequentialAgent Coordinator
+    │                                                            ├── InMemorySessionService
+    │                                                            └── [State Sync] ──► JSON Persistence
+    │
+    └─── [WebSockets] ──────► /ws/incidents/{incident_id}
+                               │
+                               └── ConnectionManager (heartbeats, channels, bridge)
+                                     ▲
+                                     └── [Bridged Task] ─── Event Bus (subscribe)
+```
+
+---
+
+### Request & Event Streaming Flow
+
+1. **Intake request:** Client issues `POST /api/incidents`.
+2. **Persistence:** The gateway generates `incident_id`, initializes the `IncidentState` as `NEW`, saves it to JSON file persistence, and returns the metadata instantly (non-blocking).
+3. **Background launch:** FastAPI queues the `ADKWorkflowOrchestrator` execution.
+4. **Execution:** The orchestrator invokes the ADK `Runner` running the `coordinator` agent.
+5. **Real-time broadcast:**
+   - As sub-agents run (Intake, Triage, Log Analyzer, RCA, etc.), they yield events.
+   - The orchestrator fetches intermediate session states, synchronizes them to the JSON file store, and publishes progress to the Event Bus.
+   - The Event Bus bridge task intercepts the published events and broadcasts them via WebSockets to all clients connected to `/ws/incidents/{incident_id}`.
+6. **Graceful Completion:** The workflow completes, report details are generated and saved, final status is updated (e.g. `RESOLVED`), and the websocket channel is updated.
+
+---
+
+### REST API Endpoint Documentation
+
+#### 1. Create Incident
+- **URL:** `/api/incidents`
+- **Method:** `POST`
+- **Request Body:**
+```json
+{
+  "title": "Database degradation",
+  "description": "DB connection pool size critical",
+  "environment": "staging",
+  "raw_alert": {
+    "name": "DatabaseDegradation",
+    "service": "checkout-db",
+    "severity": "P1"
+  }
+}
+```
+- **Response (201 Created):**
+```json
+{
+  "incident_id": "INC-CD2523DE",
+  "title": "Database degradation",
+  "description": "DB connection pool size critical",
+  "status": "NEW",
+  "severity": "P1",
+  "environment": "staging",
+  "assigned_team": "",
+  "recovery_status": "",
+  "verification_status": "",
+  "report_status": "",
+  "escalation_status": "",
+  "created_at": "2026-06-27T10:22:54.495411+00:00",
+  "updated_at": "2026-06-27T10:22:54.495411+00:00",
+  "summary": "",
+  "confidence": 0,
+  "timeline": [
+    {
+      "timestamp": "2026-06-27T10:22:54.495411+00:00",
+      "agent_name": "system",
+      "event_type": "INCIDENT_CREATED",
+      "action": "incident_created",
+      "summary": "Incident registered via API. Severity: P1",
+      "confidence": 0,
+      "tools_used": [],
+      "duration_ms": 0,
+      "entry_status": "SUCCESS"
+    }
+  ]
+}
+```
+
+#### 2. List Incidents
+- **URL:** `/api/incidents`
+- **Method:** `GET`
+- **Response (200 OK):** A JSON array of `IncidentResponse` objects.
+
+#### 3. Get Incident Details
+- **URL:** `/api/incidents/{incident_id}`
+- **Method:** `GET`
+- **Response (200 OK):** Detail representation matching the `IncidentResponse` model.
+
+#### 4. Get Incident Timeline
+- **URL:** `/api/incidents/{incident_id}/timeline`
+- **Method:** `GET`
+- **Response (200 OK):** A list of event timeline log DTOs.
+
+#### 5. Get Incident Post-Mortem Report
+- **URL:** `/api/incidents/{incident_id}/report`
+- **Method:** `GET`
+- **Response (200 OK):**
+```json
+{
+  "incident_id": "INC-CD2523DE",
+  "report": "Full Markdown Incident Post-Mortem Report ...",
+  "stakeholder_update": "Non-technical executive update text...",
+  "generated_at": "2026-06-27T10:25:00.123456+00:00"
+}
+```
+
+#### 6. Health & Readiness Checks
+- **Health:** `/health` (also `/api/health`) — Gateway status.
+- **Readiness:** `/ready` (also `/api/ready`) — Downstream database/persistence connectivity check.
+
+---
+
+### WebSocket Endpoint Documentation
+
+- **URL:** `/ws/incidents/{incident_id}`
+- **Protocol:** `WS` / `WSS`
+- **Channel Behavior:** Broadcasts state syncs and event logs as they happen during agent execution:
+```json
+{
+  "event_type": "STATUS_CHANGED",
+  "incident_id": "INC-CD2523DE",
+  "payload": {
+    "previous": "NEW",
+    "new": "TRIAGED"
+  },
+  "timestamp": "2026-06-27T10:23:00.123456+00:00"
+}
+```
+Supports client keep-alive pings (`{"type": "ping"}`) and client disconnections.
+
+---
+
+### Running Phase 5 tests
+
+```bash
+# Run new API gateway & WebSocket tests only
+uv run python -m pytest tests/test_api.py -v
+
+# Run the complete test suite (all phases)
+uv run python -m pytest tests/ -v
+```
+
+---
+
+### New Modules (Phase 5)
+
+```
+backend/
+  config.py               # Centralized configuration (timeouts, paths, keys)
+  api/
+    __init__.py           # Exports the FastAPI app
+    dto.py                # Request and Response schemas (Pydantic DTOs)
+    routes.py             # REST routes with FastAPI DI
+    websocket.py          # WebSocket ConnectionManager with Heartbeats
+    main.py               # Main entrypoint, Lifespan, custom Logging/Security middlewares
+  services/
+    orchestrator.py       # ADKWorkflowOrchestrator: runner bridge + error escalation
 ```
