@@ -47,7 +47,7 @@ export const IncidentDetail: React.FC = () => {
 
       // Update durations map from current timeline
       const durs: Record<string, number> = {};
-      incData.timeline.forEach((entry) => {
+      (incData.timeline || []).forEach((entry) => {
         const name = entry.agent_name || entry.agent;
         if (name && name !== "system") {
           durs[name] = (durs[name] || 0) + entry.duration_ms;
@@ -254,7 +254,7 @@ export const IncidentDetail: React.FC = () => {
                     .map((log, idx) => (
                       <div className="log-entry" key={`live-${idx}`} style={{ borderLeft: "2px solid #3b82f6", paddingLeft: "6px" }}>
                         <span className="log-time">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                        <span className={`log-type ${log.event_type.replace(".", "-")}`}>
+                        <span className={`log-type ${(log.event_type || "").replace(".", "-")}`}>
                           {log.agent}
                         </span>
                         <span className="log-message" style={{ color: "#fff" }}>

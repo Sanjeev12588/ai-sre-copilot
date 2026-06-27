@@ -141,9 +141,10 @@ class ADKWorkflowOrchestrator:
                         )
 
                 # Trace tool calls
-                if event.actions and event.actions.tool_calls:
-                    for tc in event.actions.tool_calls:
-                        mcp_tools_invoked.append(tc.function_name)
+                func_calls = event.get_function_calls()
+                if func_calls:
+                    for tc in func_calls:
+                        mcp_tools_invoked.append(tc.name)
                         # We map tool calls to general incident update events
                         publish_event(
                             IncidentEventType.INCIDENT_UPDATED,
@@ -153,7 +154,7 @@ class ADKWorkflowOrchestrator:
                                 "agent": current_agent or "system",
                                 "status": previous_state.status,
                                 "action": "tool_call",
-                                "tool": tc.function_name,
+                                "tool": tc.name,
                             },
                         )
 
