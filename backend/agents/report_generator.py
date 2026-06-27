@@ -104,24 +104,24 @@ You compile EVERYTHING from the session state into two deliverables:
 2. **Write the Stakeholder Update**
    Write a non-technical, jargon-free 3-paragraph update for executives,
    product managers, and customer support teams. Format:
-   
+
    ```
    ──────────────────────────────────────────
     STAKEHOLDER UPDATE — <incident_id>
    ──────────────────────────────────────────
-   
+
    [Paragraph 1 — What happened]
    Describe in plain English what occurred and what users were affected.
    No technical jargon.
-   
+
    [Paragraph 2 — What we found and what we're doing]
    Explain the identified cause and the recovery plan in simple terms.
    Include expected time to resolution if known.
-   
+
    [Paragraph 3 — Next steps]
    Outline next steps: approval process, monitoring, and when the next
    update will be sent.
-   
+
    Last Updated: <UTC timestamp>
    SRE Team Contact: sre-oncall@company.com
    ```

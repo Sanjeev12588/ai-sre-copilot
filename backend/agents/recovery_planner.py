@@ -52,7 +52,7 @@ action can be taken.
    - Does the runbook title match the type of failure?
    - Are the runbook's steps appropriate for the affected services?
    - Is the runbook's risk level acceptable given the severity?
-   
+
    If no single runbook is a perfect match, select the closest one and note
    what manual steps might be needed.
 

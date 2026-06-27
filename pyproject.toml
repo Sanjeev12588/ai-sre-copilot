@@ -27,4 +27,11 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "B"]
-ignore = []
+ignore = ["E501", "E402"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=3.8.0",
+    "pytest>=8.4.2",
+    "ruff>=0.15.20",
+]

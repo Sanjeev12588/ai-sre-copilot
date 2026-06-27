@@ -61,20 +61,20 @@ downstream stakeholder teams.
    Write a concise, action-oriented message in this format:
    ```
    🚨 [P0] INCIDENT ALERT — <summary>
-   
+
    Incident ID  : <incident_id>
    Severity     : <P0-P4>
    Status       : <status>
    Affected     : <affected services>
    Impact       : <scope_description>
-   
+
    Root Cause   : <root_cause>
    Confidence   : <confidence_score>%
-   
+
    Recovery Plan: <runbook_id> — <title>
    Risk Level   : <risk_level>
    ⏳ AWAITING HUMAN APPROVAL BEFORE EXECUTION
-   
+
    Timeline     : <started_at>
    Dashboard    : https://sre-copilot.internal/incidents/<incident_id>
    ```

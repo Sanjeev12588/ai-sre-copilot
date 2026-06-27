@@ -37,9 +37,7 @@ from mcp import StdioServerParameters
 _MONITORING_SERVER = str(
     _PROJECT_ROOT / "backend" / "mcp_servers" / "monitoring_server.py"
 )
-_INCIDENT_SERVER = str(
-    _PROJECT_ROOT / "backend" / "mcp_servers" / "incident_server.py"
-)
+_INCIDENT_SERVER = str(_PROJECT_ROOT / "backend" / "mcp_servers" / "incident_server.py")
 
 # ── MCP Toolsets ──────────────────────────────────────────────────────────────
 # Monitoring toolset: get_alerts, get_metrics, query_logs,
