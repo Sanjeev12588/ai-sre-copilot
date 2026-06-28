@@ -25,10 +25,14 @@ from backend.persistence.json_store import JsonIncidentStore
 @pytest.fixture
 def client(tmp_path) -> TestClient:
     """Isolate persistence directory and ensure lifespan startup runs."""
+    from backend.security.rate_limiter import rate_limiter
+
+    rate_limiter.reset()
     store = JsonIncidentStore(store_dir=tmp_path)
     app.state.store = store
     with TestClient(app) as test_client:
         yield test_client
+    rate_limiter.reset()
 
 
 # ---------------------------------------------------------------------------
@@ -81,7 +85,7 @@ def test_incident_routing_versions(client: TestClient) -> None:
 
 def test_not_found_error_schema(client: TestClient) -> None:
     """Verify that 404 missing incident error payload follows the unified error format."""
-    response = client.get("/api/v1/incidents/INC-GHOST99")
+    response = client.get("/api/v1/incidents/INC-C3D4E5F6")
     assert response.status_code == 404
 
     data = response.json()
