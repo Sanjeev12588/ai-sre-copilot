@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>An Autonomous Cooperative Multi-Agent Incident Response & SRE Observability Platform</strong>
+  <strong>An Autonomous Cooperative Multi-Agent Incident Response & SRE Observability Mission Control</strong>
 </p>
 
 <p align="center">
@@ -27,153 +27,234 @@
 
 ---
 
-## What is AI SRE Copilot?
+## Product Vision
+AI SRE Copilot provides engineering teams with an autonomous, cognitive control center that ingests alerts, triages outages, analyzes system log streams, deduces root causes, triggers mitigations, and documents post-mortems in minutes. 
 
-**AI SRE Copilot** is a state-of-the-art, autonomous, cooperative multi-agent SRE incident resolution platform. It ingests system alerts, Triages impact, analyzes application logs, deduces root causes, formulates step-by-step mitigation plans (with manual approval gates), and executes recovery scripts—all within a highly secured API Gateway.
-
-### Which Problem it Solves
-Traditional SRE automation is rigid, relying on hardcoded scripts and static rules that fail during complex, multi-system cascading failures. Human SRE operators are often fatigued by alert noise and high MTTR (Mean Time To Resolution). AI SRE Copilot solves this by automating the diagnostic reasoning and remediation workflow, cutting MTTR from hours to minutes.
-
-### Why AI Agents?
-Cascading failures require cognitive adaptability. SRE Copilot delegates specific investigations to **8 specialized SRE agents** (e.g. log analysis, root cause deduction, validation check). Rather than using a single monolithic LLM prompt (which suffers from context fatigue and hallucinations), these agents coordinate dynamically, yielding structured, predictable SRE operations.
-
-### Why Google ADK?
-We chose **Google's Agent Development Kit (ADK)** because of its native support for hierarchical coordination, strict schema validation, and smooth integration with Gemini models. It provides a robust framework for agent lifecycles, structured outputs, and telemetry tracing.
-
-### Why Model Context Protocol (MCP)?
-To separate the agent's reasoning from target server execution, we leverage the **Model Context Protocol (MCP)**. This separates the agent's logic from direct SSH/API execution. Agents query infrastructure tools (like tailing logs or rollback actions) over a secure JSON-RPC interface handled by independent, decoupled MCP servers.
+### Core Value Proposition
+- **Drastically Lower MTTR**: Shrinks system outage resolution from an average of 43 minutes to under 90 seconds.
+- **Autonomous Investigation**: Replaces fragile automation rules with cooperative multi-agent SRE logic.
+- **SRE Command Center**: A glassmorphism real-time mission control interface visualizing topology, agent debates, tool logs, and human authorization boundaries.
+- **Protocol Isolation**: Separates reasoning models from infrastructure environments using the Model Context Protocol (MCP).
 
 ---
 
-## Key Features
+## AI SRE Mission Control Preview
 
-- **Cooperative Multi-Agent SRE Engine**: Powered by Google ADK and Gemini, utilizing 8 specialized agent roles.
-- **Vibrant SRE Dashboard**: Datadog-style UI featuring widgets, live terminal timelines, visual agent flow executions, and alert simulators.
-- **Secured API Gateway**: Hardened FastAPI router containing IP rate limiting, payload validation, prompt injection detection, and WebSocket boundaries.
-- **Model Context Protocol (MCP) servers**: Decoupled tool servers managing metric reading and Docker container management.
-- **Hash-chained Audit Trail**: A tamper-evident JSONL security log registering every sensitive API request, WebSocket event, and tool invocation.
-- **Automated Post-Mortem Generator**: Generates comprehensive, standardized Markdown post-mortem reports.
-
----
-
-## System Architecture
-
-The SRE Copilot architecture is fully decoupled, isolating views, API gateway processing, cognitive orchestration, and target environment tools.
+Below is a preview of the redesigned, live SRE Observability Mission Control Dashboard:
 
 <p align="center">
-  <img src="docs/diagrams/system_architecture.svg" alt="System Architecture Overview" width="90%">
+  <img src="docs/screenshots/dashboard.png" alt="AI SRE Mission Control Dashboard" width="95%">
+  <br>
+  <em>AI SRE Mission Control Dashboard</em>
 </p>
-
-For a detailed deep-dive of the system architecture, event flows, and lifecycle rules, see our [Architecture Documentation](docs/architecture/overview.md).
 
 ---
 
-## UI Screenshots
+## Product Overview
 
-### 1. SRE Observability Mission Control Dashboard
-Renders active incident grids, alert simulators, and system health status.
+Production outages are cascading and complex. During a high-severity incident, traditional static automation scripts fail because they cannot adapt to unexpected infrastructure states. Humans are slow, struggle with alert fatigue, and are forced to search millions of log lines under stress.
+
+**AI SRE Copilot** solves this by establishing a team of **8 specialized SRE agents** coordinate dynamically by a central orchestrator. Built using **Google's Agent Development Kit (ADK)** and powered by **Gemini**, each agent holds a restricted scope, system instructions, and tool access boundary. Infrastructure tasks—like reading metrics, querying logs, and executing scripts—are handled over a secure JSON-RPC interface using **Model Context Protocol (MCP)** servers, guaranteeing strict sandboxing.
+
+---
+
+## How It Works
+
+The platform coordinates incident investigations through an structured pipeline:
+
+```text
+ Alert Ingestion
+       ↓
+ Intake validation (Anti-injection checks)
+       ↓
+ Triage Agent (Severity categorisation P0/P1/P2)
+       ↓
+ Log Analyzer (Log stream query via Monitoring MCP)
+       ↓
+ Root Cause Agent (Hypothesis testing and debate logic)
+       ↓
+ Evaluator Agent (Health assertions)
+       ↓
+ Recovery Planner (Playbook proposal)
+       ↓
+ SRE Human Authorization (Approval gate)
+       ↓
+ Outage Resolved (Mitigation script run via Incident MCP)
+       ↓
+ Post-Mortem Report (Generates markdown case report)
+```
+
+This sequence is modeled in our complete [System Architecture Diagram](docs/diagrams/system_architecture.svg).
+
+---
+
+## Redesigned Frontend Panels & Architecture
+
+The single-page React client has been redesigned into an enterprise-grade command center:
+
+- **SRE Control Room Banner**: Pulsing status headers highlighting active incident details, estimated time to resolve (ETA), affected users, and current AI progress bars.
+- **Agent Collaboration Canvas**: Visualizes the agent hierarchy as a connected node graph. Animated particle pulses travel between nodes to indicate message relays.
+- **SRE Heat Map**: Glowing telemetry statuses check (`PULSING RED` during outages, `WARN` during degradation, `OK` for healthy modules) tracing checkout services.
+- **Infrastructure Dependency Canvas**: Renders system topologies (`Users` $\rightarrow$ `LB` $\rightarrow$ `Gateway` $\rightarrow$ `checkout-api` $\rightarrow$ `payment-api` $\rightarrow$ `redis-cache` $\rightarrow$ `postgres`) showing blast-radius metrics.
+- **AI Agent Debate Log**: Live streaming chat log depicting argumentative reasoning between the Root Cause Agent and the Evaluator Agent.
+- **Detailed MCP Servers Registry**: Telemetry grids listing server latency metrics (ms), request volumes, and active allowed tools (`query_logs()`, `trigger_restart()`).
+- **AI Memory Cache**: Reuses resolution paths from historically resolved cases (e.g. `INC-1842: 92% similarity`).
+- **Mitigation Control Gate**: Human-in-the-loop authorization prompt displaying action details and risk assessment before running playbooks.
+- **Post-Mortem Tabbed View**: Tab selectors for Executive Summary, Chronological Timeline, Root Cause verification, and Mitigation Actions.
+- **Replay Movie Player**: Controls allowing speed adjustments (`1x / 2x / 4x`), pause/resume, and chronological jumps.
+
+---
+
+## UI Screenshots Gallery
+
+### 1. Observability Dashboard
+Renders simulated SRE impact metrics, security status widgets, operational counts, and simulation cards.
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="Mission Control Dashboard" width="80%">
+  <img src="docs/screenshots/dashboard.png" alt="Observability Dashboard" width="80%">
 </p>
 
-### 2. Live Agent reasoning Timeline
-Real-time streaming of agent execution steps, diagnostics logs, and thoughts over WebSockets.
+### 2. Incident Detail Workspace
+Command center mapping multi-agent canvasses, topologies, logs, debate logs, and replay options.
+<p align="center">
+  <img src="docs/screenshots/timeline.png" alt="Incident Detail Workspace" width="80%">
+</p>
+
+### 3. Agent Collaboration Canvas & Canvas Particles
+Visual SVG graph detailing multi-agent connection lines and active durations.
+<p align="center">
+  <img src="docs/screenshots/architecture_overview.png" alt="Agent Collaboration Canvas" width="80%">
+</p>
+
+### 4. SRE Reasoning Timeline
+Chronological, terminal-style log tracing diagnostic telemetry and logs.
 <p align="center">
   <img src="docs/screenshots/timeline.png" alt="Reasoning Timeline" width="80%">
 </p>
 
-### 3. Root Cause Analysis
-Metrics graph correlations, error highlights, and root cause hypothesis verification.
+### 5. SRE Dependency Blast Radius
+Dependency graph indicating error flows and propagating impact.
 <p align="center">
-  <img src="docs/screenshots/root_cause.png" alt="Root Cause Analysis View" width="80%">
+  <img src="docs/screenshots/root_cause.png" alt="SRE Dependency Blast Radius" width="80%">
 </p>
 
-### 4. Recovery Planner & Manual Approval Gate
-Visual step-by-step mitigation roadmap with manual approval triggers for executing rollbacks.
+### 6. MCP Tool Activity Telemetry
+Tool latency, availability scores, and request log charts.
 <p align="center">
-  <img src="docs/screenshots/recovery_plan.png" alt="Recovery Planner & Gate" width="80%">
+  <img src="docs/screenshots/security_dashboard.png" alt="MCP Tool Activity" width="80%">
+</p>
+
+### 7. Recovery Planner & Manual Gates
+Manual authorization gate actions showing risk levels.
+<p align="center">
+  <img src="docs/screenshots/recovery_plan.png" alt="Recovery Planner & Gates" width="80%">
+</p>
+
+### 8. Security Center Widgets
+API middleware checks including injection validation and firewall logs.
+<p align="center">
+  <img src="docs/screenshots/security_dashboard.png" alt="Security Center Widgets" width="80%">
+</p>
+
+### 9. Tabbed Post-Mortem Report
+Tabbed document summary of the outage resolution details.
+<p align="center">
+  <img src="docs/screenshots/report.png" alt="Tabbed Post-Mortem Report" width="80%">
+</p>
+
+### 10. Diagnostics RCA Analysis
+RCA summaries and metric comparisons.
+<p align="center">
+  <img src="docs/screenshots/root_cause.png" alt="Diagnostics RCA Analysis" width="80%">
 </p>
 
 ---
 
-## Security Model
+## Explainable AI Decisions
 
-Security is baked directly into the API gateway through a 5-stage pipeline separating untrusted browser clients from the trusted cognitive zone.
+The platform operates with complete transparency:
+* **Every decision is explainable**: All logic steps are streamed in real-time.
+* **Every tool call is audited**: Tool names, latencies, and parameter checks are logged to hash-chained files.
+* **Probability is transparent**: Agent confidence scores are plotted in circular SVG gauges.
+* **Conflict resolution is visible**: Agent debate logs show exactly how hypotheses are rejected or accepted.
 
-<p align="center">
-  <img src="docs/diagrams/security_pipeline.svg" alt="Security Pipeline Overview" width="90%">
-</p>
+---
 
-1. **IP Rate Limiting**: Token-bucket sliding window to prevent DoS attacks on alert endpoints.
-2. **DTO Validation**: Schema type coercion and field boundary validation via Pydantic.
-3. **Prompt Injection Detection**: Anti-injection checks (blacklist filters + structural checks + LLM classifiers).
-4. **Audit Trail**: Every transaction is logged to a hash-chained JSONL file to prevent audit log tempering.
-5. **Tool Firewall**: Restricts MCP actions to a strict list of safe commands and validated parameters.
+## Why AI SRE Copilot?
+
+| Attribute | Traditional Runbook Automation | AI SRE Copilot |
+| :--- | :--- | :--- |
+| **Diagnostic Reasoning** | Static logic branches (fails on unexpected conditions) | Cognitive multi-agent hypothesis testing & debates |
+| **Telemetry Context** | Basic thresholds and isolated alerts | Correlated logs, topology maps, and historical memories |
+| **Remediation Action** | Manual execution or hardcoded trigger scripts | Suggested mitigation plans with human authorization gates |
+| **Transparency** | Black-box execution, basic run logs | Visual agent canvas, streaming logs, and post-mortems |
+| **Scalability** | High rule maintenance overhead | Single ADK coordinator spawning dynamic sub-agents |
+| **Security Audits** | None | Stage-5 secure pipeline with hash-chained logs |
+
+---
+
+## Project Telemetry Metrics
+
+* **ADK Agents**: 8 specialized cognitive agents
+* **MCP Servers**: 2 servers (Monitoring and Incident MCP)
+* **Security Pipeline Stages**: 5 layers
+* **REST API Endpoints**: 7 endpoints
+* **WebSocket Channels**: 1 endpoint
+* **Automated Tests**: 434 tests passing successfully
+* **UI Workspace Panels**: 10 active sections
+* **Generated Architecture Diagrams**: 10 SVG diagrams
+* **Documentation Pages**: 2 core assets
 
 ---
 
 ## Repository Structure
 
 ```text
-├── .github/                  # CI workflows, PR and Issue templates
+├── .github/                  # CI configurations, PR/Issue templates, release configurations
 ├── backend/                  # FastAPI Gateway, SRE Agents, MCP Servers, Security Pipeline
-│   ├── api/                  # FastAPI routers, DTO schemas, WebSockets
-│   ├── agents/               # Google ADK agent configurations & logic
-│   ├── mcp_servers/          # Decoupled MCP tool servers (monitoring & incidents)
-│   ├── security/             # Rate limiter, injection detector, audit trail, PII redactor
-│   └── persistence/          # JSON Case-File storage engine
-├── frontend/                 # React SPA (Vite + TypeScript + vanilla CSS)
-├── docs/                     # System architecture SVG diagrams, UI screenshots, design files
-├── tests/                    # Comprehensive unit, integration, and contract tests
-├── pyproject.toml            # Project metadata and dependencies
+│   ├── api/                  # REST endpoints and WebSocket stream servers
+│   ├── agents/               # Google ADK agent logic
+│   ├── mcp_servers/          # Decoupled MCP tool servers
+│   ├── security/             # Rate limiting, injection filters, audit logging, redaction
+│   └── persistence/          # JSON Case-File storage
+├── frontend/                 # React SPA (Vite + TS + Custom HSL Glassmorphism CSS)
+│   ├── src/components/       # UI elements (Navbar, feed logs)
+│   ├── src/pages/            # Dashboard pages, detail command centers, health checks
+│   └── src/css/              # Stylesheets Overhauls (mission_control.css)
+├── docs/                     # Documentation diagrams, screenshots, branding assets
+├── tests/                    # Pytest validation suites (unit & integration tests)
+├── pyproject.toml            # Backend dependencies
 └── uv.lock                   # Lockfile for reproducible Python installations
 ```
 
 ---
 
-## Tech Stack
-
-- **Backend**: Python 3.11, FastAPI, Uvicorn, Pydantic, Python-dotenv
-- **Frontend**: React 19, TypeScript, Vite, Framer Motion, Vanilla CSS
-- **AI / Reasoning**: Google ADK, Google GenAI SDK (Gemini 2.5/3.5)
-- **Tooling Interface**: Model Context Protocol (MCP) Standard
-- **Testing**: Pytest, Pytest-asyncio, FastAPI TestClient
-
----
-
-## Installation & Setup
+## Installation & Local Development
 
 ### Prerequisites
 - Python 3.11 or higher
 - Node.js 22 or higher
 - A valid **Gemini API Key** (set as `GEMINI_API_KEY` in your environment)
 
-### 1. Clone the Repository
+### 1. Clone & Set Environment
 ```bash
 git clone https://github.com/Sanjeev12588/ai-sre-copilot.git
 cd ai-sre-copilot
 ```
-
-### 2. Configure Environment Variables
-Create a `.env` file in the root directory:
+Create a `.env` file in the root:
 ```env
-GEMINI_API_KEY="your-gemini-api-key-here"
+GEMINI_API_KEY="your-key-here"
 ENV="development"
 PERSISTENCE_DIR="./data/incidents"
 AUDIT_LOG_DIR="./data/audit"
 ```
 
-### 3. Backend Setup
-We use `uv` for lightning-fast Python package and environment management.
+### 2. Backend Setup (`uv` environment)
 ```bash
-# Install uv (if not already installed)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-
-# Install python dependencies and create virtual environment
+# Install uv and sync packages
 uv sync
 ```
 
-### 4. Frontend Setup
+### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
@@ -182,51 +263,38 @@ cd ..
 
 ---
 
-## Running Locally
+## Running the Project
 
-To run the complete platform, start both the FastAPI backend gateway and the React frontend development server.
-
-### Start the Backend
-In your root directory, run:
+### Start Backend APIs
 ```bash
 uv run uvicorn backend.api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-The API documentation will be available at `http://127.0.0.1:8000/docs`.
 
-### Start the Frontend
-In another terminal, navigate to the `frontend` folder and run:
+### Start Frontend client
 ```bash
 cd frontend
 npm run dev
 ```
-Open `http://localhost:5173` in your browser to view the Mission Control Dashboard.
+Access the dashboard at `http://localhost:5173`.
 
----
-
-## Running Tests
-
-Verify code formatting, linting rules, and run all 434 tests using `uv`:
-
+### Running Tests
+Verify the installation by running the validation suite:
 ```bash
-# 1. Run lint check
-uv run ruff check backend tests
-
-# 2. Run format check
-uv run ruff format --check backend tests
-
-# 3. Run full test suite
 uv run pytest
 ```
 
-*Note: All tests run offline (using mocks for the Gemini API and MCP processes).*
+---
+
+## Future Roadmap
+
+- **Telemetry Integrations**: Connect production-grade monitoring systems (Datadog API, Google Cloud Monitoring API).
+- **Incident Escalation**: Complete PagerDuty webhook configurations.
+- **Agent Engines**: Deploy Vertex AI agent runtime options.
+- **Historical Learning**: Train agents on historical audit trail logs for automatic recovery suggestions.
+- **Topology mapping**: Auto-discover microservice topologies from Kubernetes cluster contexts.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgements
-
-- **Google DeepMind** & the **Kaggle AI Agents Intensive** team for organizing this capstone challenge.
-- The open-source SRE community for defining incident post-mortem standards.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

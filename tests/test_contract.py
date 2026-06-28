@@ -7,6 +7,7 @@ from datetime import datetime
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
+from unittest.mock import patch, MagicMock
 
 from backend.api.dto import (
     IncidentResponse,
@@ -56,7 +57,8 @@ def test_v1_and_legacy_health_endpoints(client: TestClient) -> None:
         assert data["status"] == "ready"
 
 
-def test_incident_routing_versions(client: TestClient) -> None:
+@patch("backend.services.orchestrator.ADKWorkflowOrchestrator.execute_workflow")
+def test_incident_routing_versions(mock_workflow: MagicMock, client: TestClient) -> None:
     """Verify both /api/v1/incidents and backward-compatible /api/incidents resolve to the same logic."""
     # Create using legacy path
     create_payload = {
