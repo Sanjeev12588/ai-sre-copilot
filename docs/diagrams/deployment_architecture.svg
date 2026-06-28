@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 550" width="100%" height="100%">
+    <defs>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+    </filter>
+
+
+    <filter id="shadow-sm" x="-5%" y="-5%" width="110%" height="110%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.04" />
+    </filter>
+
+
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3B82F6" />
+        <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#8B5CF6" />
+        <stop offset="100%" stop-color="#6D28D9" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#F59E0B" />
+        <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#10B981" />
+        <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-gray" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6B7280" />
+        <stop offset="100%" stop-color="#374151" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-red" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#EF4444" />
+        <stop offset="100%" stop-color="#B91C1C" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-light-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#EFF6FF" />
+        <stop offset="100%" stop-color="#DBEAFE" />
+    </linearGradient>
+
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#4B5563" />
+    </marker>
+
+
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2563EB" />
+    </marker>
+
+    </defs>
+
+    <!-- Background Canvas -->
+    <rect width="950" height="550" fill="#FFFFFF" />
+    <rect width="950" height="550" fill="#F1F5F9" opacity="0.4" />
+
+
+    <text x="30" y="40" font-family="'Inter', sans-serif" font-weight="bold" font-size="16" fill="#1E293B" text-anchor="start">LOCAL DEMO / KAGGLE SUBMISSION DEPLOYMENT MODEL</text>
+
+
+    <!-- Group Boundary: CLIENT ZONE (BROWSER) -->
+    <rect x="30" y="90" width="250" height="410" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="1.5" />
+    <rect x="46" y="80" width="184" height="20" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+    <text x="54" y="94" font-family="'Inter', sans-serif" font-weight="bold" font-size="11" fill="#475569">CLIENT ZONE (BROWSER)</text>
+
+
+    <!-- Card: Browser Client -->
+    <rect x="50" y="160" width="210" height="80" rx="12" fill="url(#grad-blue)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="66" y="196" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">Browser Client</text>
+    <text x="66" y="216" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Renders HTML5/CSS3/JS app</text>
+
+
+    <!-- Card: React Runtime -->
+    <rect x="50" y="310" width="210" height="80" rx="12" fill="url(#grad-blue)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="66" y="346" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">React Runtime</text>
+    <text x="66" y="366" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Handles UI views & WebSocket</text>
+
+
+    <!-- Group Boundary: LOCAL GATEWAY HOST (PYTHON) -->
+    <rect x="330" y="90" width="330" height="410" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="1.5" />
+    <rect x="346" y="80" width="232" height="20" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+    <text x="354" y="94" font-family="'Inter', sans-serif" font-weight="bold" font-size="11" fill="#475569">LOCAL GATEWAY HOST (PYTHON)</text>
+
+
+    <!-- Card: Vite Dev Server (Port 5173) -->
+    <rect x="350" y="140" width="290" height="70" rx="12" fill="url(#grad-purple)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="366" y="171" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">Vite Dev Server (Port 5173)</text>
+    <text x="366" y="191" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Serves compiled frontend bundle</text>
+
+
+    <!-- Card: FastAPI / Uvicorn (Port 8000) -->
+    <rect x="350" y="260" width="290" height="70" rx="12" fill="url(#grad-purple)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="366" y="291" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">FastAPI / Uvicorn (Port 8000)</text>
+    <text x="366" y="311" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Serves REST API and WebSockets</text>
+
+
+    <!-- Card: MCP Servers (STDIO process) -->
+    <rect x="350" y="380" width="290" height="70" rx="12" fill="url(#grad-green)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="366" y="411" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">MCP Servers (STDIO process)</text>
+    <text x="366" y="431" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Pruned mock data & CLI tool execution</text>
+
+
+    <!-- Group Boundary: EXTERNAL APIS -->
+    <rect x="700" y="90" width="220" height="410" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-dasharray="4,4" stroke-width="1.5" />
+    <rect x="716" y="80" width="120" height="20" rx="6" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+    <text x="724" y="94" font-family="'Inter', sans-serif" font-weight="bold" font-size="11" fill="#475569">EXTERNAL APIS</text>
+
+
+    <!-- Card: Gemini API
+(Google GenAI SDK) -->
+    <rect x="720" y="200" width="180" height="80" rx="12" fill="url(#grad-red)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="736" y="236" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">Gemini API
+(Google GenAI SDK)</text>
+    <text x="736" y="256" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Cognitive reasoning
+& plan evaluation</text>
+
+
+    <!-- Card: Local JSON DB
+(data/incidents/) -->
+    <rect x="720" y="340" width="180" height="80" rx="12" fill="url(#grad-gray)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="736" y="376" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">Local JSON DB
+(data/incidents/)</text>
+    <text x="736" y="396" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Saves state to disk</text>
+
+
+    <line x1="260" y1="200" x2="350" y2="175" stroke="#3B82F6" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <text x="305.0" y="181.5" font-family="'Inter', sans-serif" font-size="11" fill="#3B82F6" font-weight="bold" text-anchor="middle">HTTP</text>
+
+
+    <line x1="260" y1="350" x2="350" y2="295" stroke="#3B82F6" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <text x="305.0" y="316.5" font-family="'Inter', sans-serif" font-size="11" fill="#3B82F6" font-weight="bold" text-anchor="middle">REST / WS</text>
+
+
+    <line x1="640" y1="295" x2="720" y2="240" stroke="#EF4444" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <text x="680.0" y="261.5" font-family="'Inter', sans-serif" font-size="11" fill="#EF4444" font-weight="bold" text-anchor="middle">GenAI Calls</text>
+
+
+    <line x1="640" y1="305" x2="720" y2="380" stroke="#6B7280" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <text x="680.0" y="336.5" font-family="'Inter', sans-serif" font-size="11" fill="#6B7280" font-weight="bold" text-anchor="middle">Disk writes</text>
+
+
+    <line x1="495" y1="330" x2="495" y2="380" stroke="#10B981" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <text x="495.0" y="349.0" font-family="'Inter', sans-serif" font-size="11" fill="#10B981" font-weight="bold" text-anchor="middle">Stdout stdio</text>
+
+</svg>

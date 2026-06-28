@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 550" width="100%" height="100%">
+    <defs>
+
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.06" />
+    </filter>
+
+
+    <filter id="shadow-sm" x="-5%" y="-5%" width="110%" height="110%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.04" />
+    </filter>
+
+
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3B82F6" />
+        <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#8B5CF6" />
+        <stop offset="100%" stop-color="#6D28D9" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#F59E0B" />
+        <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#10B981" />
+        <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-gray" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6B7280" />
+        <stop offset="100%" stop-color="#374151" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-red" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#EF4444" />
+        <stop offset="100%" stop-color="#B91C1C" />
+    </linearGradient>
+
+
+    <linearGradient id="grad-light-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#EFF6FF" />
+        <stop offset="100%" stop-color="#DBEAFE" />
+    </linearGradient>
+
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#4B5563" />
+    </marker>
+
+
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2563EB" />
+    </marker>
+
+    </defs>
+
+    <!-- Background Canvas -->
+    <rect width="950" height="550" fill="#FFFFFF" />
+    <rect width="950" height="550" fill="#F1F5F9" opacity="0.4" />
+
+
+    <text x="30" y="40" font-family="'Inter', sans-serif" font-weight="bold" font-size="16" fill="#1E293B" text-anchor="start">GATEWAY 5-STAGE PIPELINE & TRUST BOUNDARIES</text>
+
+
+    <!-- Group Boundary: UNTRUSTED ZONE -->
+    <rect x="20" y="90" width="180" height="380" rx="16" fill="#FFF1F2" stroke="#FDA4AF" stroke-dasharray="4,4" stroke-width="1.5" />
+    <rect x="36" y="80" width="128" height="20" rx="6" fill="#FFFFFF" stroke="#FDA4AF" stroke-width="1" />
+    <text x="44" y="94" font-family="'Inter', sans-serif" font-weight="bold" font-size="11" fill="#475569">UNTRUSTED ZONE</text>
+
+
+    <text x="30" y="120" font-family="'Inter', sans-serif" font-weight="bold" font-size="12" fill="#991B1B" text-anchor="start">External Inputs</text>
+
+
+    <!-- Card: Webhook Payload
+(Alert Data) -->
+    <rect x="30" y="170" width="160" height="70" rx="12" fill="url(#grad-red)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="46" y="201" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">Webhook Payload
+(Alert Data)</text>
+    <text x="46" y="221" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">REST JSON Ingestion</text>
+
+
+    <!-- Card: WebSocket Feed
+(Client Commands) -->
+    <rect x="30" y="300" width="160" height="70" rx="12" fill="url(#grad-red)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="46" y="331" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">WebSocket Feed
+(Client Commands)</text>
+    <text x="46" y="351" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Pong & Controls</text>
+
+<line x1="210" y1="90" x2="210" y2="470" stroke="#EF4444" stroke-width="3" stroke-dasharray="6,4" />
+
+    <text x="220" y="110" font-family="'Inter', sans-serif" font-weight="bold" font-size="11" fill="#EF4444" text-anchor="start">TRUST BOUNDARY / GATEWAY FIREWALL</text>
+
+
+    <!-- Card: 1. Rate Limiter -->
+    <rect x="240" y="140" width="150" height="60" rx="12" fill="url(#grad-purple)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="256" y="166" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">1. Rate Limiter</text>
+    <text x="256" y="186" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Per-IP Sliding Window</text>
+
+
+    <!-- Card: 2. DTO Validation -->
+    <rect x="410" y="140" width="150" height="60" rx="12" fill="url(#grad-purple)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="426" y="166" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">2. DTO Validation</text>
+    <text x="426" y="186" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Pydantic Schemas</text>
+
+
+    <!-- Card: 3. LLM Injection Det. -->
+    <rect x="580" y="140" width="150" height="60" rx="12" fill="url(#grad-purple)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="596" y="166" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">3. LLM Injection Det.</text>
+    <text x="596" y="186" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">3-Layer prompt check</text>
+
+
+    <!-- Card: 4. Tool Firewall -->
+    <rect x="750" y="140" width="150" height="60" rx="12" fill="url(#grad-purple)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="766" y="166" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">4. Tool Firewall</text>
+    <text x="766" y="186" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">MCP request audit</text>
+
+
+    <!-- Card: 5. Audit Logger -->
+    <rect x="490" y="270" width="170" height="70" rx="12" fill="url(#grad-gray)" stroke="none" stroke-width="1.5" filter="url(#shadow)" />
+
+
+    <text x="506" y="301" font-family="'Inter', sans-serif" font-weight="bold" font-size="14" fill="#FFFFFF">5. Audit Logger</text>
+    <text x="506" y="321" font-family="'Inter', sans-serif" font-size="12" fill="#E2E8F0">Hash-chained security log</text>
+
+
+    <!-- Group Boundary: TRUSTED COGNITIVE EXECUTION ZONE (offline / sanitized) -->
+    <rect x="240" y="370" width="660" height="140" rx="16" fill="#ECFDF5" stroke="#6EE7B7" stroke-dasharray="4,4" stroke-width="1.5" />
+    <rect x="256" y="360" width="448" height="20" rx="6" fill="#FFFFFF" stroke="#6EE7B7" stroke-width="1" />
+    <text x="264" y="374" font-family="'Inter', sans-serif" font-weight="bold" font-size="11" fill="#475569">TRUSTED COGNITIVE EXECUTION ZONE (offline / sanitized)</text>
+
+
+    <!-- Subcard: Google ADK Orchestrator -->
+    <rect x="260" y="420" width="180" height="50" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)" />
+
+
+    <text x="272" y="443" font-family="'Inter', sans-serif" font-weight="bold" font-size="12" fill="#1E293B">Google ADK Orchestrator</text>
+    <text x="272" y="459" font-family="'Inter', sans-serif" font-size="10.5" fill="#64748B">Multi-Agent Workflow Engine</text>
+
+
+    <!-- Subcard: MCP Registry -->
+    <rect x="480" y="420" width="180" height="50" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)" />
+
+
+    <text x="492" y="443" font-family="'Inter', sans-serif" font-weight="bold" font-size="12" fill="#1E293B">MCP Registry</text>
+    <text x="492" y="459" font-family="'Inter', sans-serif" font-size="10.5" fill="#64748B">Tool access execution</text>
+
+
+    <!-- Subcard: JSON Incident Store -->
+    <rect x="700" y="420" width="180" height="50" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" filter="url(#shadow-sm)" />
+
+
+    <text x="712" y="443" font-family="'Inter', sans-serif" font-weight="bold" font-size="12" fill="#1E293B">JSON Incident Store</text>
+    <text x="712" y="459" font-family="'Inter', sans-serif" font-size="10.5" fill="#64748B">Secured filesystem storage</text>
+
+
+    <line x1="190" y1="200" x2="240" y2="170" stroke="#4B5563" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <line x1="190" y1="310" x2="240" y2="180" stroke="#4B5563" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <line x1="390" y1="170" x2="410" y2="170" stroke="#4B5563" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <line x1="560" y1="170" x2="580" y2="170" stroke="#4B5563" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <line x1="730" y1="170" x2="750" y2="170" stroke="#4B5563" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <line x1="825" y1="200" x2="825" y2="370" stroke="#10B981" stroke-width="2" stroke-dasharray="" marker-end="url(#arrow)" />
+
+
+    <text x="825.0" y="279.0" font-family="'Inter', sans-serif" font-size="11" fill="#10B981" font-weight="bold" text-anchor="middle">Execute</text>
+
+
+    <line x1="580" y1="270" x2="580" y2="200" stroke="#EF4444" stroke-width="2" stroke-dasharray="2,2" marker-end="url(#arrow)" />
+
+
+    <text x="580.0" y="229.0" font-family="'Inter', sans-serif" font-size="11" fill="#EF4444" font-weight="bold" text-anchor="middle">Log Block</text>
+
+</svg>
