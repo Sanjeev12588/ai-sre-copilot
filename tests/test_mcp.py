@@ -71,9 +71,9 @@ class TestGetAlerts:
     def test_db_pool_alert_present(self) -> None:
         result = get_alerts()
         names = [a["name"] for a in result]
-        assert (
-            "DatabaseConnectionPoolExhausted" in names
-        ), "Expected DatabaseConnectionPoolExhausted alert"
+        assert "DatabaseConnectionPoolExhausted" in names, (
+            "Expected DatabaseConnectionPoolExhausted alert"
+        )
 
     def test_annotations_have_runbook_url(self) -> None:
         result = get_alerts()
@@ -116,9 +116,9 @@ class TestGetMetrics:
 
     def test_db_pool_reaches_max_at_incident_time(self) -> None:
         result = get_metrics("checkout-service", "db_connection_pool_usage")
-        assert (
-            result["summary"]["max"] == 100.0
-        ), "Expected pool to reach 100 connections (full saturation)"
+        assert result["summary"]["max"] == 100.0, (
+            "Expected pool to reach 100 connections (full saturation)"
+        )
 
     def test_range_minutes_limits_data_points(self) -> None:
         full = get_metrics("checkout-service", "db_connection_pool_usage", 80)
@@ -140,9 +140,9 @@ class TestGetMetrics:
     def test_auth_service_is_stable(self) -> None:
         """auth-service should show stable latency (not affected by DB incident)."""
         result = get_metrics("auth-service", "latency_p99")
-        assert (
-            result["summary"]["max"] < 100
-        ), "auth-service latency should be stable (< 100ms max)"
+        assert result["summary"]["max"] < 100, (
+            "auth-service latency should be stable (< 100ms max)"
+        )
 
 
 class TestQueryLogs:
@@ -175,9 +175,9 @@ class TestQueryLogs:
     def test_critical_logs_present_in_checkout(self) -> None:
         result = query_logs("checkout-service", query_string="pool")
         levels = [e["level"] for e in result]
-        assert (
-            "CRITICAL" in levels or "ERROR" in levels
-        ), "Expected ERROR/CRITICAL logs mentioning 'pool' in checkout-service"
+        assert "CRITICAL" in levels or "ERROR" in levels, (
+            "Expected ERROR/CRITICAL logs mentioning 'pool' in checkout-service"
+        )
 
     def test_unknown_service_returns_empty_list(self) -> None:
         result = query_logs("nonexistent-service")
@@ -195,9 +195,9 @@ class TestQueryLogs:
     def test_auth_service_shows_healthy_logs(self) -> None:
         result = query_logs("auth-service")
         assert result, "Expected at least one auth-service log"
-        assert all(
-            e["level"] in ("INFO", "DEBUG") for e in result
-        ), "auth-service should have only INFO/DEBUG logs (it is healthy)"
+        assert all(e["level"] in ("INFO", "DEBUG") for e in result), (
+            "auth-service should have only INFO/DEBUG logs (it is healthy)"
+        )
 
     def test_payments_db_logs_show_connection_errors(self) -> None:
         result = query_logs("payments-db-v2")

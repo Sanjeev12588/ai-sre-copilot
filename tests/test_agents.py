@@ -111,9 +111,9 @@ class TestTriageAgent:
 
         instr = triage_agent.instruction
         for level in ("P0", "P1", "P2", "P3", "P4"):
-            assert (
-                level in instr
-            ), f"Severity level {level} missing from triage instruction"
+            assert level in instr, (
+                f"Severity level {level} missing from triage instruction"
+            )
 
     def test_instruction_mentions_blast_radius(self) -> None:
         from backend.agents.triage import triage_agent
@@ -380,9 +380,9 @@ class TestCoordinator:
     def test_exactly_eight_sub_agents(self) -> None:
         from backend.agents.coordinator import coordinator
 
-        assert (
-            len(coordinator.sub_agents) == 8
-        ), f"Expected 8 sub-agents, got {len(coordinator.sub_agents)}"
+        assert len(coordinator.sub_agents) == 8, (
+            f"Expected 8 sub-agents, got {len(coordinator.sub_agents)}"
+        )
 
     def test_pipeline_order(self) -> None:
         """Sub-agents must be chained in the documented order."""
@@ -399,9 +399,9 @@ class TestCoordinator:
             "report_generator_agent",
         ]
         actual_names = [a.name for a in coordinator.sub_agents]
-        assert (
-            actual_names == expected_names
-        ), f"Pipeline order mismatch.\nExpected: {expected_names}\nGot: {actual_names}"
+        assert actual_names == expected_names, (
+            f"Pipeline order mismatch.\nExpected: {expected_names}\nGot: {actual_names}"
+        )
 
     def test_coordinator_has_description(self) -> None:
         from backend.agents.coordinator import coordinator
